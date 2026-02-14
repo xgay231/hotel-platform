@@ -1,0 +1,124 @@
+### 用户接口测试
+@baseUrl = http://localhost:3000
+@contentType = application/json
+
+###############################################################################
+# 注册接口测试
+###############################################################################
+
+### 1. 正常注册请求
+POST {{baseUrl}}/api/users/register
+Content-Type: {{contentType}}
+
+{
+  "username": "testuser",
+  "password": "password123"
+}
+
+### 2. 重复用户名注册请求（测试错误处理）
+POST {{baseUrl}}/api/users/register
+Content-Type: {{contentType}}
+
+{
+  "username": "testuser",
+  "password": "password456"
+}
+
+### 3. 注册新用户（另一个测试账号）
+POST {{baseUrl}}/api/users/register
+Content-Type: {{contentType}}
+
+{
+  "username": "newuser",
+  "password": "newpass123"
+}
+
+### 4. 缺少密码字段（测试验证）
+POST {{baseUrl}}/api/users/register
+Content-Type: {{contentType}}
+
+{
+  "username": "incompleteuser"
+}
+
+### 5. 缺少用户名字段（测试验证）
+POST {{baseUrl}}/api/users/register
+Content-Type: {{contentType}}
+
+{
+  "password": "password123"
+}
+
+### 6. 空用户名和密码（测试验证）
+POST {{baseUrl}}/api/users/register
+Content-Type: {{contentType}}
+
+{
+  "username": "",
+  "password": ""
+}
+
+###############################################################################
+# 登录接口测试
+###############################################################################
+
+### 7. 正常登录请求（使用已注册的 testuser）
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+  "username": "testuser",
+  "password": "password123"
+}
+
+### 8. 正常登录请求（使用已注册的 newuser）
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+  "username": "newuser",
+  "password": "newpass123"
+}
+
+### 9. 用户名不存在
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+  "username": "nonexistent",
+  "password": "password123"
+}
+
+### 10. 密码错误
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+  "username": "testuser",
+  "password": "wrongpassword"
+}
+
+### 11. 缺少用户名字段
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+  "password": "password123"
+}
+
+### 12. 缺少密码字段
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+  "username": "testuser"
+}
+
+### 13. 空用户名和密码
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+  "username": "",
+  "password": ""
+}
