@@ -123,9 +123,13 @@ Content-Type: {{contentType}}
   "password": ""
 }
 
-### 14. 未携带 Token 访问 profile
+###############################################################################
+# 用户信息接口测试（profile）
+###############################################################################
+
+### 14. 未登录访问 profile
 GET {{baseUrl}}/api/users/profile
 
-### 15. 携带 Token 访问 profile
+### 15. 已登录访问 profile（请将 <token> 替换为实际登录返回的 token）
 GET {{baseUrl}}/api/users/profile
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTA1MWZiOTM1OWNkZmU2MWFlZWUxMyIsInVzZXJuYW1lIjoibmV3dXNlciIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzcxMTU4MzEwLCJleHAiOjE3NzEyNDQ3MTB9.X90T00Sddz0SQY9MycGmt4p-DbH8Pf_S7ivyBz1X4nA
