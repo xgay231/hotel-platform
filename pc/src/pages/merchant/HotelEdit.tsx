@@ -1,4 +1,4 @@
-const Register = () => {
-  return <div>注册页面</div>;
+const HotelEdit = () => {
+  return <div>酒店编辑页面</div>;
 };
-export default Register;
+export default HotelEdit;

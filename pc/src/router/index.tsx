@@ -4,6 +4,7 @@ import Register from "@/pages/auth/Register";
 import HotelEdit from "@/pages/merchant/HotelEdit";
 import AuditList from "@/pages/admin/AuditList";
 import NotFound from "@/pages/NotFound";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -30,33 +31,45 @@ const router = createBrowserRouter([
     path: "/register",
     element: <Register />,
   },
-  // 商户路由区域
+  // 商户路由区域 - 需要登录
   {
     path: "/merchant",
     element: (
-      <DashboardLayout>
-        <HotelEdit />
-      </DashboardLayout>
-    ), // 暂时直接展示编辑页
+      <ProtectedRoute>
+        <DashboardLayout>
+          <HotelEdit />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: "hotel/edit", // 完整路径 /merchant/hotel/edit
-        element: <HotelEdit />,
+        element: (
+          <ProtectedRoute>
+            <HotelEdit />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
-  // 管理员路由区域
+  // 管理员路由区域 - 需要登录
   {
     path: "/admin",
     element: (
-      <DashboardLayout>
-        <AuditList />
-      </DashboardLayout>
+      <ProtectedRoute>
+        <DashboardLayout>
+          <AuditList />
+        </DashboardLayout>
+      </ProtectedRoute>
     ),
     children: [
       {
         path: "audit", // 完整路径 /admin/audit
-        element: <AuditList />,
+        element: (
+          <ProtectedRoute>
+            <AuditList />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
