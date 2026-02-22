@@ -1,6 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { getHotels, createHotel } = require("../controllers/hotelController");
+const {
+  getHotels,
+  createHotel,
+  getHotelById,
+  createRoom,
+} = require("../controllers/hotelController");
 
 /**
  * @route   POST /api/hotels
@@ -21,28 +26,13 @@ router.get("/", getHotels);
  * @desc    获取酒店详情（含房型）
  * @access  Public
  */
+router.get("/:id", getHotelById);
 
-router.get("/", (req, res) => {
-  res.send("酒店列表页面");
-});
-
-router.get("/:id", (req, res) => {
-  const hotelId = req.params.id;
-  res.send(`酒店详情页面，酒店ID: ${hotelId}`);
-});
-
-router.post("/", (req, res) => {
-  res.send("创建新酒店");
-});
-
-router.put("/:id", (req, res) => {
-  const hotelId = req.params.id;
-  res.send(`更新酒店信息，酒店ID: ${hotelId}`);
-});
-
-router.delete("/:id", (req, res) => {
-  const hotelId = req.params.id;
-  res.send(`删除酒店，酒店ID: ${hotelId}`);
-});
+/**
+ * @route   POST /api/hotels/:id/rooms
+ * @desc    创建房型（上传房型信息）
+ * @access  Public
+ */
+router.post("/:id/rooms", createRoom);
 
 module.exports = router;
