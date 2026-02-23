@@ -1,5 +1,6 @@
 const Hotel = require("../models/Hotel");
 const HotelRoom = require("../models/HotelRoom");
+const Banner = require("../models/Banner");
 
 /**
  * 获取酒店列表
@@ -165,9 +166,77 @@ const createRoom = async (req, res) => {
   }
 };
 
+/**
+ * 获取轮播图列表
+ * @route GET /api/banners
+ */
+const getBanners = async (req, res) => {
+  try {
+    const banners = await Banner.find().sort({ createdAt: -1 });
+    res.json({
+      success: true,
+      data: banners,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "获取轮播图列表失败",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * 创建 Banner（上传 Banner）
+ * @route POST /api/banners
+ */
+const createBanner = async (req, res) => {
+  try {
+    const { id, image_url, hotel_id } = req.body;
+
+    // 检查 Banner ID 是否已存在
+    const existingBanner = await Banner.findOne({ id });
+    if (existingBanner) {
+      return res.status(400).json({
+        success: false,
+        message: "Banner ID已存在",
+      });
+    }
+
+    // 检查酒店是否存在
+    const hotel = await Hotel.findOne({ hotel_id });
+    if (!hotel) {
+      return res.status(404).json({
+        success: false,
+        message: "酒店不存在",
+      });
+    }
+
+    const banner = await Banner.create({
+      id,
+      image_url,
+      hotel_id,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Banner创建成功",
+      data: banner,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "创建Banner失败",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getHotels,
   createHotel,
   getHotelById,
   createRoom,
+  getBanners,
+  createBanner,
 };

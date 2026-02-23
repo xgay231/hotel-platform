@@ -15,11 +15,16 @@ GET {{baseUrl}}/api/hotels
 GET {{baseUrl}}/api/hotels/hotel_004
 
 #############################################
+# 3. 获取轮播图列表
+#############################################
+GET {{baseUrl}}/api/hotels/banners/list
+
+#############################################
 # 上传 API
 #############################################
 
 #############################################
-# 3. 创建酒店（上传酒店详情）
+# 4. 创建酒店（上传酒店详情）
 #############################################
 POST {{baseUrl}}/api/hotels
 Content-Type: application/json
@@ -41,7 +46,7 @@ Content-Type: application/json
 }
 
 #############################################
-# 4. 创建房型（上传房型信息）
+# 5. 创建房型（上传房型信息）
 #############################################
 POST {{baseUrl}}/api/hotels/hotel_005/rooms
 Content-Type: application/json
@@ -54,7 +59,7 @@ Content-Type: application/json
 }
 
 #############################################
-# 5. 创建房型 - 第二个房型
+# 6. 创建房型 - 第二个房型
 #############################################
 POST {{baseUrl}}/api/hotels/hotel_005/rooms
 Content-Type: application/json
@@ -64,4 +69,16 @@ Content-Type: application/json
   "name": "商务套房",
   "price": 699,
   "desc": "35㎡，大床2.0米，含双早"
+}
+
+#############################################
+# 7. 创建 Banner（上传 Banner）
+#############################################
+POST {{baseUrl}}/api/hotels/banners
+Content-Type: application/json
+
+{
+  "id": "banner_005",
+  "image_url": "https://example.com/banner5.png",
+  "hotel_id": "hotel_005"
 }

@@ -5,6 +5,8 @@ const {
   createHotel,
   getHotelById,
   createRoom,
+  getBanners,
+  createBanner,
 } = require("../controllers/hotelController");
 
 /**
@@ -34,5 +36,19 @@ router.get("/:id", getHotelById);
  * @access  Public
  */
 router.post("/:id/rooms", createRoom);
+
+/**
+ * @route   GET /api/hotels/banners/list
+ * @desc    获取轮播图列表
+ * @access  Public
+ */
+router.get("/banners/list", getBanners);
+
+/**
+ * @route   POST /api/banners
+ * @desc    创建 Banner（上传 Banner）
+ * @access  Public
+ */
+router.post("/banners", createBanner);
 
 module.exports = router;
