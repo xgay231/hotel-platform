@@ -1,0 +1,161 @@
+// 遮罩层
+.calendar-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: flex;
+  align-items: flex-end;
+}
+
+// 日历容器
+.calendar-container {
+  width: 100%;
+  background-color: #fff;
+  border-radius: 20rpx 20rpx 0 0;
+  padding: 20rpx;
+}
+
+// 日历头部
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+
+  .header-title {
+    font-size: 32rpx;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 20rpx;
+
+    .action-btn {
+      font-size: 28rpx;
+      color: #007aff;
+    }
+  }
+}
+
+// 星期标题
+.calendar-week {
+  display: flex;
+  margin-bottom: 10rpx;
+
+  .week-item {
+    flex: 1;
+    text-align: center;
+    font-size: 26rpx;
+    color: #666;
+  }
+}
+
+// 日历主体
+.calendar-body {
+  display: flex;
+  flex-wrap: wrap;
+
+  .calendar-item {
+    width: 14.28%;
+    height: 80rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-sizing: border-box;
+
+    .day-text {
+      font-size: 26rpx;
+      color: #333;
+      z-index: 1;
+    }
+
+    // 点击反馈
+    &.calendar-item-hover {
+      background-color: #f5f5f5;
+    }
+
+    // 非当月日期
+    &.not-current {
+      .day-text {
+        color: #ccc !important;
+      }
+    }
+
+    // 今日
+    &.today {
+      .day-text {
+        color: #007aff !important;
+        font-weight: 600;
+      }
+    }
+
+    // ========== 核心：选中样式（最高优先级） ==========
+    &.selected {
+      background-color: #007aff !important;
+      border-radius: 50% !important;
+
+      .day-text {
+        color: #fff !important;
+        font-weight: 500;
+      }
+    }
+
+    // 区间内样式
+    &.in-range {
+      background-color: #e6f0ff !important;
+
+      .day-text {
+        color: #007aff !important;
+      }
+    }
+
+    // 开始/结束日期特殊样式
+    &.start {
+      border-radius: 50% 0 0 50% !important;
+    }
+
+    &.end {
+      border-radius: 0 50% 50% 0 !important;
+    }
+
+    &.start.end {
+      border-radius: 50% !important;
+    }
+  }
+}
+
+// 底部操作栏
+.calendar-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 30rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #eee;
+
+  .cancel-btn {
+    font-size: 30rpx;
+    color: #666;
+  }
+
+  .confirm-btn {
+    font-size: 30rpx;
+    color: #fff;
+    background-color: #007aff;
+    padding: 15rpx 40rpx;
+    border-radius: 40rpx;
+
+    &.disabled {
+      background-color: #ccc !important;
+      color: #fff !important;
+      pointer-events: none;
+    }
+  }
+}
