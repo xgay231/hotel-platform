@@ -1,0 +1,206 @@
+/*!**************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[2]!./node_modules/resolve-url-loader/index.js!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[4]!./src/pages/detail/index.scss ***!
+  \**************************************************************************************************************************************************************************************************************************************************************************************************************************/
+.hotel-detail-page {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.hotel-cover {
+  width: 100%;
+  height: auto;
+}
+
+.hotel-base-info {
+  padding: 20rpx;
+  background-color: #fff;
+  margin-bottom: 10rpx;
+}
+
+.hotel-base-info .hotel-name-cn {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.hotel-base-info .hotel-name-en {
+  font-size: 24rpx;
+  color: #999;
+  display: block;
+  margin-bottom: 15rpx;
+  font-family: Arial, sans-serif;
+}
+
+.hotel-base-info .hotel-star-time {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10rpx;
+}
+
+.hotel-base-info .hotel-star-time .hotel-star {
+  font-size: 28rpx;
+  color: #ffc107;
+}
+
+.hotel-base-info .hotel-star-time .hotel-open-time {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.hotel-base-info .hotel-address {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.4;
+}
+
+.hotel-room-types {
+  padding: 20rpx;
+  background-color: #fff;
+  margin-bottom: 10rpx;
+}
+
+.hotel-room-types .room-types-title {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 15rpx;
+  display: block;
+}
+
+.hotel-room-types .room-list .room-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.hotel-room-types .room-list .room-item:last-child {
+  border-bottom: none;
+}
+
+.hotel-room-types .room-list .room-item .room-left {
+  flex: 1;
+}
+
+.hotel-room-types .room-list .room-item .room-left .room-name {
+  font-size: 28rpx;
+  color: #333;
+  display: block;
+  margin-bottom: 5rpx;
+}
+
+.hotel-room-types .room-list .room-item .room-left .room-desc {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.hotel-room-types .room-list .room-item .room-right {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.hotel-room-types .room-list .room-item .room-right .room-price {
+  font-size: 28rpx;
+  color: #e64340;
+  font-weight: 500;
+}
+
+.hotel-room-types .room-list .room-item .room-right .room-unit {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.hotel-room-types .room-list .room-item .room-right .book-room-btn {
+  background-color: #409eff;
+  color: #fff;
+  border: none;
+  padding: 5rpx 15rpx;
+  font-size: 22rpx;
+}
+
+.hotel-facilities {
+  padding: 20rpx;
+  background-color: #fff;
+  margin-bottom: 10rpx;
+}
+
+.hotel-facilities .facilities-title {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 15rpx;
+  display: block;
+}
+
+.hotel-facilities .facilities-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15rpx;
+}
+
+.hotel-facilities .facilities-list .facility-item {
+  padding: 8rpx 15rpx;
+  background-color: #f0f8ff;
+  color: #409eff;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+}
+
+.hotel-desc {
+  padding: 20rpx;
+  background-color: #fff;
+  margin-bottom: 100rpx;
+}
+
+.hotel-desc .desc-title {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 15rpx;
+  display: block;
+}
+
+.hotel-desc .desc-content {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.6;
+}
+
+.book-btn-wrap {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 15rpx 20rpx;
+  background-color: #fff;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+.book-btn-wrap .book-btn {
+  width: 100%;
+  height: 80rpx;
+  line-height: 80rpx;
+  background-color: #ff6700;
+  color: #fff;
+  border-radius: 40rpx;
+  font-size: 32rpx;
+  border: none;
+}
+
+.loading-wrap {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-wrap .loading-text {
+  font-size: 28rpx;
+  color: #999;
+}
