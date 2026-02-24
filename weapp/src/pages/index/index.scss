@@ -1,0 +1,218 @@
+.hotel-query-page {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* ========== 1. Banner 轮播 ========== */
+.banner-container {
+  width: 100%;
+  height: 200px;
+  background-color: #eee;
+}
+.banner-item {
+  width: 100%;
+  height: 100%;
+}
+.banner-image-wrap {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.banner-image {
+  width: 100%;
+  height: 100%;
+}
+
+/* ========== 2. 顶部 Tab ========== */
+.top-tabs {
+  display: flex;
+  background-color: #fff;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #eee;
+}
+.tab-item {
+  flex: 1;
+  text-align: center;
+  font-size: 28rpx;
+  color: #666;
+  &.active {
+    color: #007aff;
+    font-weight: 500;
+  }
+}
+
+/* ========== 3. 查询表单 ========== */
+.query-form {
+  background-color: #fff;
+  margin: 20rpx;
+  border-radius: 12rpx;
+  padding: 30rpx;
+}
+
+/* 表单行 */
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30rpx;
+  position: relative; /* 为价格单位定位 */
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* 核心：宽度控制类 */
+.form-item {
+  display: flex;
+  align-items: center;
+  // 省份/城市各占50%
+  &.half-width {
+    flex: 1;
+    &:first-child {
+      margin-right: 20rpx; // 省份和城市之间的间距
+    }
+  }
+  // 酒店名称/价格 独占一行
+  &.full-width {
+    flex: 1;
+    width: 100%;
+  }
+}
+
+.label {
+  width: 80rpx;
+  font-size: 28rpx;
+  color: #333;
+  margin-right: 10rpx;
+  flex-shrink: 0; /* 防止标签被压缩 */
+}
+.input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+  padding: 10rpx 0;
+  border-bottom: 1rpx solid #eee;
+}
+
+/* ========== 新增：价格单位样式 ========== */
+.price-unit {
+  position: absolute;
+  right: 10rpx;
+  bottom: 12rpx;
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 日期行 */
+.date-row {
+  display: flex;
+  align-items: center;
+  background-color: #f8f8f8;
+  border-radius: 8rpx;
+  padding: 20rpx;
+}
+.date-item {
+  flex: 1;
+}
+.date-label {
+  font-size: 24rpx;
+  color: #999;
+  display: block;
+  margin-bottom: 8rpx;
+}
+.date-value {
+  font-size: 28rpx;
+  color: #333;
+}
+.date-sep {
+  margin: 0 20rpx;
+  color: #ccc;
+  font-size: 28rpx;
+}
+.date-nights {
+  font-size: 24rpx;
+  color: #666;
+  margin-left: 20rpx;
+}
+
+/* ========== 新增：星级选择器样式 ========== */
+.filter-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.filter-title {
+  font-size: 28rpx;
+  color: #333;
+  width: 80rpx;
+  margin-right: 10rpx;
+}
+
+.star-selector {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 15rpx;
+}
+
+.star-icon {
+  font-size: 36rpx;
+  color: #ccc;
+  cursor: pointer;
+  &.active {
+    color: #FFD700; /* 金黄色 */
+  }
+}
+
+.reset-star {
+  font-size: 24rpx;
+  color: #007aff;
+  margin-left: 15rpx;
+  display: none; /* 默认隐藏 */
+  &.visible {
+    display: block; /* 选中星级后显示 */
+  }
+}
+
+/* 查询按钮 */
+.search-btn {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: linear-gradient(90deg, #409eff, #007aff);
+  color: #fff;
+  border-radius: 44rpx;
+  font-size: 32rpx;
+  border: none;
+}
+// 星级选择器样式强化
+.star-selector {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 15rpx;
+}
+
+.star-icon {
+  font-size: 36rpx;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  &.active {
+    color: #FFD700 !important; /* 金黄色，强制高亮 */
+    text-shadow: 0 0 2rpx #FFC107; // 增加轻微阴影，更醒目
+  }
+}
+
+.reset-star {
+  font-size: 24rpx;
+  color: #007aff;
+  margin-left: 15rpx;
+  display: none;
+  &.visible {
+    display: block;
+  }
+  &:hover {
+    color: #0056b3;
+  }
+}
