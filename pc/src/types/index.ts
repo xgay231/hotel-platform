@@ -15,7 +15,7 @@ export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
 /** 用户信息 */
 export interface UserInfo {
-  id: string;
+  userid: string;
   username: string;
   role: UserRole;
   email?: string;

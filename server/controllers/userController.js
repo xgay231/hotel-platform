@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { v4: uuidv4 } = require("uuid");
 
 exports.register = async (req, res) => {
   try {
@@ -15,6 +16,7 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = await User.create({
+      userid: uuidv4(), // 自动生成 UUID
       username,
       password: hashedPassword,
       role: role || "user",
@@ -23,14 +25,16 @@ exports.register = async (req, res) => {
     res.status(201).json({
       message: "User registered successfully",
       user: {
-        id: user._id,
+        userid: user.userid,
         username: user.username,
         role: user.role,
       },
     });
   } catch (error) {
+    console.error("注册错误:", error);
     res.status(500).json({
       error: error.message,
+      details: error.stack,
     });
   }
 };
@@ -51,11 +55,11 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign(
       {
-        id: user._id,
+        userid: user.userid, // 使用 userid
         username: user.username,
         role: user.role,
       },
-      "mysecretkey", // 这里应该使用环境变量来存储密钥
+      process.env.JWT_SECRET || "mysecretkey",
       {
         expiresIn: "24h",
       }
@@ -65,7 +69,7 @@ exports.login = async (req, res) => {
       message: "登录成功",
       token,
       user: {
-        id: user._id,
+        userid: user.userid,
         username: user.username,
         role: user.role,
       },
@@ -86,10 +90,15 @@ exports.getProfile = async (req, res) => {
     }
 
     const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "mysecretkey");
 
-    const decoded = jwt.verify(token, "mysecretkey");
+    const user = await User.findOne({ userid: decoded.userid }).select(
+      "-password"
+    );
 
-    const user = await User.findById(decoded.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "用户不存在" });
+    }
 
     res.json({
       user,

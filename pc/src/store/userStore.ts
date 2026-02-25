@@ -37,7 +37,7 @@ const useUserStore = create<UserState>()(
 
       // 计算属性方法
       getRole: () => get().user?.role || null,
-      getUserId: () => get().user?.id || null,
+      getUserId: () => get().user?.userid || null,
       getUsername: () => get().user?.username || null,
       isAdmin: () => get().user?.role === "admin",
       isMerchant: () => get().user?.role === "merchant",
