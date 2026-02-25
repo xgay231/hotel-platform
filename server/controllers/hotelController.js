@@ -30,6 +30,7 @@ const createHotel = async (req, res) => {
   try {
     const {
       hotel_id,
+      merchant_id,
       name_cn,
       name_en,
       star,
@@ -42,6 +43,8 @@ const createHotel = async (req, res) => {
       province,
       city,
       image_url,
+      online_status,
+      tags,
     } = req.body;
 
     // 检查 hotel_id 是否已存在
@@ -55,6 +58,7 @@ const createHotel = async (req, res) => {
 
     const hotel = await Hotel.create({
       hotel_id,
+      merchant_id,
       name_cn,
       name_en,
       star,
@@ -67,6 +71,11 @@ const createHotel = async (req, res) => {
       province,
       city,
       image_url,
+      online_status,
+      tags,
+      // audit_status 默认为 '审核中'
+      // publish_status 默认为 '未发布'
+      // rating, review_count, favorite_count 默认为 0
     });
 
     res.status(201).json({
@@ -124,7 +133,7 @@ const getHotelById = async (req, res) => {
 const createRoom = async (req, res) => {
   try {
     const { id } = req.params;
-    const { room_id, name, price, desc } = req.body;
+    const { room_id, name, price, desc, tags } = req.body;
 
     // 检查酒店是否存在
     const hotel = await Hotel.findOne({ hotel_id: id });
@@ -150,6 +159,7 @@ const createRoom = async (req, res) => {
       name,
       price,
       desc,
+      tags,
     });
 
     res.status(201).json({

@@ -29,6 +29,10 @@ const hotelRoomSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    tags: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,

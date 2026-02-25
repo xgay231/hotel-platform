@@ -8,6 +8,12 @@ const hotelSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
+    merchant_id: {
+      type: String,
+      required: true,
+      trim: true,
+      index: true,
+    },
     name_cn: {
       type: String,
       required: true,
@@ -69,6 +75,45 @@ const hotelSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    audit_status: {
+      type: String,
+      enum: ["审核中", "通过", "不通过"],
+      default: "审核中",
+    },
+    audit_reason: {
+      type: String,
+      trim: true,
+    },
+    publish_status: {
+      type: String,
+      enum: ["已发布", "未发布"],
+      default: "未发布",
+    },
+    online_status: {
+      type: String,
+      enum: ["上线", "下线"],
+      required: true,
+    },
+    rating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    review_count: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    favorite_count: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,
@@ -78,6 +123,8 @@ const hotelSchema = new mongoose.Schema(
 // 添加索引优化查询性能
 hotelSchema.index({ province: 1, city: 1 });
 hotelSchema.index({ min_price: 1 });
+hotelSchema.index({ audit_status: 1 });
+hotelSchema.index({ online_status: 1 });
 
 const Hotel = mongoose.model("Hotel", hotelSchema);
 
