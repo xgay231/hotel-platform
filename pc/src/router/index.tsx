@@ -1,28 +1,27 @@
+/**
+ * 路由配置
+ * 公开路由：/login, /register
+ * 受保护路由：/merchant/*, /admin/*
+ */
+
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
+import HotelList from "@/pages/merchant/HotelList";
 import HotelEdit from "@/pages/merchant/HotelEdit";
 import AuditList from "@/pages/admin/AuditList";
 import NotFound from "@/pages/NotFound";
 import ProtectedRoute from "@/components/ProtectedRoute";
-
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div style={{ padding: 20 }}>
-      {/* 这里的 Header 只是示意，后面会换成 Ant Design 的 Layout */}
-      <header style={{ marginBottom: 20, borderBottom: "1px solid #ddd" }}>
-        <h3>酒店管理系统导航栏</h3>
-      </header>
-      <main>{children}</main>
-    </div>
-  );
-};
+import DashboardLayout from "@/layouts/DashboardLayout";
 
 const router = createBrowserRouter([
+  // 根路径重定向到登录页
   {
     path: "/",
-    element: <Navigate to="/login" replace />, // 默认跳转到登录
+    element: <Navigate to="/login" replace />,
   },
+
+  // ==================== 公开路由区域 ====================
   {
     path: "/login",
     element: <Login />,
@@ -31,28 +30,38 @@ const router = createBrowserRouter([
     path: "/register",
     element: <Register />,
   },
-  // 商户路由区域 - 需要登录
+
+  // ==================== 商户路由区域（受保护）====================
   {
     path: "/merchant",
     element: (
       <ProtectedRoute>
         <DashboardLayout>
-          <HotelEdit />
+          <HotelList />
         </DashboardLayout>
       </ProtectedRoute>
     ),
     children: [
       {
-        path: "hotel/edit", // 完整路径 /merchant/hotel/edit
-        element: (
-          <ProtectedRoute>
-            <HotelEdit />
-          </ProtectedRoute>
-        ),
+        index: true, // /merchant 默认显示酒店列表
+        element: <HotelList />,
+      },
+      {
+        path: "hotel/list", // /merchant/hotel/list
+        element: <HotelList />,
+      },
+      {
+        path: "hotel/edit", // /merchant/hotel/edit
+        element: <HotelEdit />,
+      },
+      {
+        path: "hotel/edit/:id", // /merchant/hotel/edit/:id 编辑指定酒店
+        element: <HotelEdit />,
       },
     ],
   },
-  // 管理员路由区域 - 需要登录
+
+  // ==================== 管理员路由区域（受保护）====================
   {
     path: "/admin",
     element: (
@@ -64,15 +73,17 @@ const router = createBrowserRouter([
     ),
     children: [
       {
-        path: "audit", // 完整路径 /admin/audit
-        element: (
-          <ProtectedRoute>
-            <AuditList />
-          </ProtectedRoute>
-        ),
+        index: true, // /admin 默认显示审核列表
+        element: <AuditList />,
+      },
+      {
+        path: "audit", // /admin/audit
+        element: <AuditList />,
       },
     ],
   },
+
+  // ==================== 404 页面 ====================
   {
     path: "*",
     element: <NotFound />,

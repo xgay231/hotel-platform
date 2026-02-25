@@ -1,4 +1,5 @@
-import api from './api';
+import api from "./api";
+import type { UserInfo, UserRole } from "@/types";
 
 export interface LoginParams {
   username: string;
@@ -8,12 +9,7 @@ export interface LoginParams {
 export interface RegisterParams {
   username: string;
   password: string;
-}
-
-export interface UserInfo {
-  id: string;
-  username: string;
-  role: string;
+  role: UserRole;
 }
 
 export interface LoginResponse {
@@ -29,18 +25,20 @@ export interface RegisterResponse {
 
 // 登录
 export const login = async (params: LoginParams): Promise<LoginResponse> => {
-  const response = await api.post<LoginResponse>('/users/login', params);
+  const response = await api.post<LoginResponse>("/users/login", params);
   return response.data;
 };
 
 // 注册
-export const register = async (params: RegisterParams): Promise<RegisterResponse> => {
-  const response = await api.post<RegisterResponse>('/users/register', params);
+export const register = async (
+  params: RegisterParams
+): Promise<RegisterResponse> => {
+  const response = await api.post<RegisterResponse>("/users/register", params);
   return response.data;
 };
 
 // 获取用户信息
 export const getProfile = async (): Promise<{ user: UserInfo }> => {
-  const response = await api.get<{ user: UserInfo }>('/users/profile');
+  const response = await api.get<{ user: UserInfo }>("/users/profile");
   return response.data;
 };
