@@ -66,30 +66,46 @@ const generateMockHotels = (): Hotel[] => {
 
     hotels.push({
       id: `hotel-${i.toString().padStart(3, "0")}`,
+      merchantId: "merchant-001", // 当前商户 ID
+      merchantName: "测试商户",
+      // 基本信息
       name: `${city.replace("市", "")}豪华酒店${i}号`,
+      nameEn: `Grand Hotel ${i}`,
       star: (Math.floor(Math.random() * 3) + 3) as 3 | 4 | 5, // 3-5星
-      address: `${province}${city}中心区商业街${i}号`,
-      city,
       province,
-      description: `这是一家位于${city}市中心的豪华酒店，交通便利，设施完善。`,
+      city,
+      address: `${province}${city}中心区商业街${i}号`,
+      // 价格与时间
+      minPrice: Math.floor(Math.random() * 500) + 200,
+      openTime: "09:00",
+      // 图片相关
+      coverImage: `https://picsum.photos/seed/hotel${i}cover/800/600`,
       images: [
         `https://picsum.photos/seed/hotel${i}a/800/600`,
         `https://picsum.photos/seed/hotel${i}b/800/600`,
       ],
+      // 描述与标签
+      description: `这是一家位于${city}市中心的豪华酒店，交通便利，设施完善。`,
+      tags: ["免费WiFi", "停车场", "游泳池", "健身房"],
+      // 设施
       facilities: [
         { id: "f1", name: "免费WiFi" },
         { id: "f2", name: "停车场" },
         { id: "f3", name: "游泳池" },
         { id: "f4", name: "健身房" },
       ],
+      // 审核与发布状态
       auditStatus,
       publishStatus,
-      rejectReason:
+      auditReason:
         auditStatus === "rejected"
           ? "酒店信息不完整，请补充房型信息后重新提交。"
           : undefined,
-      merchantId: "merchant-001", // 当前商户 ID
-      merchantName: "测试商户",
+      // 统计数据
+      rating: Math.round((Math.random() * 2 + 3) * 10) / 10, // 3.0-5.0
+      reviewCount: Math.floor(Math.random() * 100),
+      favoriteCount: Math.floor(Math.random() * 50),
+      // 时间戳
       createdAt: new Date(
         Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000
       ).toISOString(),
@@ -160,20 +176,39 @@ const mapPublishStatusToBackend = (status: Hotel["publishStatus"]): string => {
  */
 const mapHotelFromBackend = (backendHotel: any): Hotel => {
   return {
+    // 标识字段
     id: backendHotel.hotel_id,
-    name: backendHotel.name_cn,
-    star: backendHotel.star,
-    address: backendHotel.address,
-    city: backendHotel.city,
-    province: backendHotel.province,
-    description: backendHotel.desc,
-    images: [backendHotel.cover_image, backendHotel.image_url].filter(Boolean),
-    facilities: [], // 后端暂无设施数据
-    auditStatus: mapAuditStatus(backendHotel.audit_status),
-    publishStatus: mapPublishStatus(backendHotel.publish_status),
-    rejectReason: backendHotel.audit_reason,
     merchantId: backendHotel.merchant_id,
     merchantName: backendHotel.merchant_name || "",
+    // 基本信息
+    name: backendHotel.name_cn,
+    nameEn: backendHotel.name_en || "",
+    star: backendHotel.star,
+    province: backendHotel.province,
+    city: backendHotel.city,
+    address: backendHotel.address,
+    // 价格与时间
+    minPrice: backendHotel.min_price || 0,
+    openTime: backendHotel.open_time || "",
+    // 图片相关
+    coverImage: backendHotel.cover_image || "",
+    images: backendHotel.image_url
+      ? backendHotel.image_url.split(",").filter(Boolean)
+      : [],
+    // 描述与标签
+    description: backendHotel.desc || "",
+    tags: backendHotel.tags || [],
+    // 设施
+    facilities: [], // 后端暂无设施数据
+    // 审核与发布状态
+    auditStatus: mapAuditStatus(backendHotel.audit_status),
+    publishStatus: mapPublishStatus(backendHotel.publish_status),
+    auditReason: backendHotel.audit_reason || "",
+    // 统计数据
+    rating: backendHotel.rating || 0,
+    reviewCount: backendHotel.review_count || 0,
+    favoriteCount: backendHotel.favorite_count || 0,
+    // 时间戳
     createdAt: backendHotel.createdAt,
     updatedAt: backendHotel.updatedAt,
   };
@@ -186,27 +221,30 @@ const mapHotelToBackend = (frontendHotel: Partial<Hotel>): any => {
   return {
     hotel_id: frontendHotel.id || `hotel-${Date.now()}`,
     merchant_id: frontendHotel.merchantId,
+    // 基本信息
     name_cn: frontendHotel.name,
-    name_en: frontendHotel.name, // 暂时使用中文名
+    name_en: frontendHotel.nameEn || frontendHotel.name || "",
     star: frontendHotel.star,
-    address: frontendHotel.address,
     province: frontendHotel.province,
     city: frontendHotel.city,
-    desc: frontendHotel.description,
-    cover_image: frontendHotel.images?.[0] || "",
-    image_url: frontendHotel.images?.[1] || "",
+    address: frontendHotel.address,
+    // 价格与时间
+    min_price: frontendHotel.minPrice || 0,
+    open_time: frontendHotel.openTime || "",
+    // 图片相关
+    cover_image: frontendHotel.coverImage || "",
+    image_url: frontendHotel.images?.join(",") || "",
+    // 描述与标签
+    desc: frontendHotel.description || "",
+    tags: frontendHotel.tags || [],
+    // 审核与发布状态（仅用于创建时，更新时由后端处理）
     audit_status: frontendHotel.auditStatus
       ? mapAuditStatusToBackend(frontendHotel.auditStatus)
       : "审核中",
-    audit_reason: frontendHotel.rejectReason,
+    audit_reason: frontendHotel.auditReason || "",
     publish_status: frontendHotel.publishStatus
       ? mapPublishStatusToBackend(frontendHotel.publishStatus)
       : "未发布",
-    // 其他必需字段使用默认值
-    open_time: "09:00",
-    min_price: 0,
-    quick_flag: "N",
-    tags: [],
   };
 };
 
@@ -497,7 +535,7 @@ export const updateHotel = async (
       ...data,
       // 酒店信息修改后，重置审核状态为"审核中"，发布状态为"未发布"
       auditStatus: "pending",
-      rejectReason: undefined,
+      auditReason: undefined,
       publishStatus: "draft",
       updatedAt: new Date().toISOString(),
     };
@@ -790,7 +828,7 @@ export const approveHotel = async (hotelId: string): Promise<Hotel> => {
       throw new Error("只有审核中或不通过的酒店可以审核通过");
     }
     hotel.auditStatus = "approved";
-    hotel.rejectReason = undefined;
+    hotel.auditReason = undefined;
     return hotel;
   }
 
@@ -833,7 +871,7 @@ export const rejectHotel = async (
       throw new Error("请填写不通过原因");
     }
     hotel.auditStatus = "rejected";
-    hotel.rejectReason = reason.trim();
+    hotel.auditReason = reason.trim();
     // 如果酒店之前已发布，需要将发布状态重置为未发布
     if (
       hotel.publishStatus === "published" ||
@@ -854,6 +892,74 @@ export const rejectHotel = async (
     return mapHotelFromBackend(response.data);
   } catch (error) {
     console.error("审核不通过酒店失败:", error);
+    throw error;
+  }
+};
+
+// ==================== 图片上传 ====================
+
+/**
+ * 上传单张酒店图片
+ * @param file 图片文件
+ * @returns 上传后的图片 URL
+ */
+export const uploadHotelImage = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  try {
+    const response = await request.post<{
+      success: boolean;
+      message: string;
+      data: {
+        url: string;
+        filename: string;
+        originalName: string;
+        size: number;
+      };
+    }>("/hotels/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    // 返回完整的图片 URL
+    return `http://localhost:4000${response.data.url}`;
+  } catch (error) {
+    console.error("上传图片失败:", error);
+    throw error;
+  }
+};
+
+/**
+ * 上传多张酒店图片
+ * @param files 图片文件数组
+ * @returns 上传后的图片 URL 数组
+ */
+export const uploadHotelImages = async (files: File[]): Promise<string[]> => {
+  const formData = new FormData();
+  files.forEach((file) => {
+    formData.append("images", file);
+  });
+
+  try {
+    const response = await request.post<{
+      success: boolean;
+      message: string;
+      data: {
+        urls: string[];
+        count: number;
+      };
+    }>("/hotels/upload/multiple", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    // 返回完整的图片 URL 数组
+    return response.data.urls.map((url) => `http://localhost:4000${url}`);
+  } catch (error) {
+    console.error("上传图片失败:", error);
     throw error;
   }
 };

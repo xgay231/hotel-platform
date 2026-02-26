@@ -15,6 +15,9 @@ const {
   onlineHotel,
   approveHotel,
   rejectHotel,
+  uploadHotelImage,
+  uploadHotelImages,
+  upload,
 } = require("../controllers/hotelController");
 
 /**
@@ -114,5 +117,19 @@ router.put("/:id/approve", approveHotel);
  * @access  Public
  */
 router.put("/:id/reject", rejectHotel);
+
+/**
+ * @route   POST /api/hotels/upload
+ * @desc    上传单张酒店图片
+ * @access  Public
+ */
+router.post("/upload", upload.single("image"), uploadHotelImage);
+
+/**
+ * @route   POST /api/hotels/upload/multiple
+ * @desc    上传多张酒店图片
+ * @access  Public
+ */
+router.post("/upload/multiple", upload.array("images", 10), uploadHotelImages);
 
 module.exports = router;

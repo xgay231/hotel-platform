@@ -90,22 +90,73 @@ export interface HotelFacility {
 
 /** 酒店信息 */
 export interface Hotel {
-  id: string;
-  name: string;
-  star: HotelStar;
-  address: string;
-  city: string;
-  province: string;
-  description: string;
-  images: string[];
-  facilities: HotelFacility[];
-  auditStatus: AuditStatus;
-  publishStatus: PublishStatus;
-  rejectReason?: string;
-  merchantId: string;
-  merchantName?: string;
-  createdAt: string;
-  updatedAt: string;
+  // === 标识字段 ===
+  id: string; // hotel_id
+  merchantId: string; // merchant_id
+  merchantName?: string; // merchant_name
+
+  // === 基本信息（可编辑） ===
+  name: string; // name_cn - 中文名称
+  nameEn?: string; // name_en - 英文名称
+  star: HotelStar; // star - 星级
+  province: string; // province - 省份
+  city: string; // city - 城市
+  address: string; // address - 详细地址
+
+  // === 价格与时间（可编辑） ===
+  minPrice: number; // min_price - 最低价格
+  openTime?: string; // open_time - 开业时间
+
+  // === 图片相关（可编辑） ===
+  coverImage?: string; // cover_image - 封面图片
+  images: string[]; // image_url - 图片URL列表
+
+  // === 描述与标签（可编辑） ===
+  description: string; // desc - 酒店描述
+  tags: string[]; // tags - 标签
+
+  // === 设施（可编辑） ===
+  facilities: HotelFacility[]; // facilities - 酒店设施
+
+  // === 审核与发布状态（只读） ===
+  auditStatus: AuditStatus; // audit_status - 审核状态
+  auditReason?: string; // audit_reason - 审核原因（不通过时）
+  publishStatus: PublishStatus; // publish_status - 发布状态
+
+  // === 统计数据（只读，系统自动计算） ===
+  rating: number; // rating - 评分(0-5)
+  reviewCount: number; // review_count - 评论数
+  favoriteCount: number; // favorite_count - 收藏数
+
+  // === 时间戳（只读） ===
+  createdAt: string; // createdAt
+  updatedAt: string; // updatedAt
+}
+
+/** 酒店可编辑字段（用于创建/更新请求） */
+export interface HotelEditableFields {
+  // 基本信息
+  name: string; // name_cn - 中文名称
+  nameEn?: string; // name_en - 英文名称
+  star: HotelStar; // star - 星级
+  province: string; // province - 省份
+  city: string; // city - 城市
+  address: string; // address - 详细地址
+
+  // 价格与时间
+  minPrice: number; // min_price - 最低价格
+  openTime?: string; // open_time - 开业时间
+
+  // 图片相关
+  coverImage?: string; // cover_image - 封面图片
+  images?: string[]; // image_url - 图片URL列表
+
+  // 描述与标签
+  description?: string; // desc - 酒店描述
+  tags?: string[]; // tags - 标签
+
+  // 设施
+  facilities?: HotelFacility[]; // facilities - 酒店设施
 }
 
 /** 酒店列表查询参数 */
@@ -127,15 +178,30 @@ export interface HotelListResponse {
 
 /** 酒店创建/更新请求 */
 export interface HotelRequest {
-  id?: string;
-  name: string;
-  star: HotelStar;
-  address: string;
-  city: string;
-  province: string;
-  description: string;
-  images: string[];
-  facilities: HotelFacility[];
+  // 基本信息
+  name: string; // name_cn - 中文名称
+  nameEn?: string; // name_en - 英文名称
+  star: HotelStar; // star - 星级
+  province: string; // province - 省份
+  city: string; // city - 城市
+  address: string; // address - 详细地址
+
+  // 价格与时间
+  minPrice: number; // min_price - 最低价格
+  openTime?: string; // open_time - 开业时间
+
+  // 图片相关
+  coverImage?: string; // cover_image - 封面图片
+  images?: string[]; // image_url - 图片URL列表
+
+  // 描述与标签
+  description?: string; // desc - 酒店描述
+  tags?: string[]; // tags - 标签
+
+  // 设施
+  facilities?: HotelFacility[]; // facilities - 酒店设施
+
+  // 房型（创建时可选）
   roomTypes?: CreateRoomRequest[];
 }
 

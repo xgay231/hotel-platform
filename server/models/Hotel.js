@@ -56,11 +56,6 @@ const hotelSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-    quick_flag: {
-      type: String,
-      required: true,
-      trim: true,
-    },
     province: {
       type: String,
       required: true,

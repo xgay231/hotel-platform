@@ -3,6 +3,7 @@ const Hotel = require("../models/Hotel");
 const HotelRoom = require("../models/HotelRoom");
 const Banner = require("../models/Banner");
 const User = require("../models/User");
+const upload = require("../config/upload");
 
 /**
  * 获取酒店列表
@@ -81,7 +82,6 @@ const createHotel = async (req, res) => {
       cover_image,
       desc,
       min_price,
-      quick_flag,
       province,
       city,
       image_url,
@@ -99,7 +99,6 @@ const createHotel = async (req, res) => {
       cover_image,
       desc,
       min_price,
-      quick_flag,
       province,
       city,
       image_url,
@@ -133,7 +132,6 @@ const createHotel = async (req, res) => {
       cover_image,
       desc,
       min_price,
-      quick_flag,
       province,
       city,
       image_url,
@@ -216,7 +214,6 @@ const updateHotel = async (req, res) => {
       cover_image,
       desc,
       min_price,
-      quick_flag,
       province,
       city,
       image_url,
@@ -244,7 +241,6 @@ const updateHotel = async (req, res) => {
     if (cover_image !== undefined) hotel.cover_image = cover_image;
     if (desc !== undefined) hotel.desc = desc;
     if (min_price !== undefined) hotel.min_price = min_price;
-    if (quick_flag !== undefined) hotel.quick_flag = quick_flag;
     if (province !== undefined) hotel.province = province;
     if (city !== undefined) hotel.city = city;
     if (image_url !== undefined) hotel.image_url = image_url;
@@ -760,6 +756,82 @@ const rejectHotel = async (req, res) => {
   }
 };
 
+/**
+ * 上传酒店图片
+ * @route POST /api/hotels/upload
+ * @desc 上传单张或多张酒店图片
+ */
+const uploadHotelImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "请选择要上传的图片",
+      });
+    }
+
+    // 构建图片访问 URL
+    const imageUrl = `/uploads/${req.file.filename}`;
+
+    console.log("[uploadHotelImage] 图片上传成功:", imageUrl);
+
+    res.json({
+      success: true,
+      message: "图片上传成功",
+      data: {
+        url: imageUrl,
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        size: req.file.size,
+      },
+    });
+  } catch (error) {
+    console.error("[uploadHotelImage] 图片上传失败:", error);
+    res.status(500).json({
+      success: false,
+      message: "图片上传失败",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * 上传多张酒店图片
+ * @route POST /api/hotels/upload/multiple
+ * @desc 上传多张酒店图片
+ */
+const uploadHotelImages = async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "请选择要上传的图片",
+      });
+    }
+
+    // 构建图片访问 URL 列表
+    const imageUrls = req.files.map((file) => `/uploads/${file.filename}`);
+
+    console.log("[uploadHotelImages] 图片上传成功:", imageUrls);
+
+    res.json({
+      success: true,
+      message: "图片上传成功",
+      data: {
+        urls: imageUrls,
+        count: imageUrls.length,
+      },
+    });
+  } catch (error) {
+    console.error("[uploadHotelImages] 图片上传失败:", error);
+    res.status(500).json({
+      success: false,
+      message: "图片上传失败",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getHotels,
   createHotel,
@@ -775,4 +847,7 @@ module.exports = {
   onlineHotel,
   approveHotel,
   rejectHotel,
+  uploadHotelImage,
+  uploadHotelImages,
+  upload,
 };

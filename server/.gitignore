@@ -29,3 +29,5 @@ coverage/
 # 构建输出
 dist/
 build/
+
+uploads/

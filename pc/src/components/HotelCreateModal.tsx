@@ -4,10 +4,20 @@
  */
 
 import React, { useState } from "react";
-import { Modal, Form, Input, Select, message, Space } from "antd";
+import {
+  Modal,
+  Form,
+  Input,
+  Select,
+  message,
+  Space,
+  Upload,
+  Divider,
+} from "antd";
 import type { Hotel, HotelStar } from "../types";
-import { createHotel } from "../services/hotelService";
+import { createHotel, uploadHotelImage } from "../services/hotelService";
 import useUserStore from "../store/userStore";
+import type { UploadFile, UploadProps } from "antd/es/upload/interface";
 
 const { TextArea } = Input;
 
@@ -59,6 +69,12 @@ const HotelCreateModal: React.FC<HotelCreateModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
 
+  // 图片上传相关状态
+  const [coverImageFileList, setCoverImageFileList] = useState<UploadFile[]>(
+    []
+  );
+  const [imagesFileList, setImagesFileList] = useState<UploadFile[]>([]);
+
   // 获取当前用户信息
   const { user } = useUserStore();
 
@@ -85,18 +101,35 @@ const HotelCreateModal: React.FC<HotelCreateModalProps> = ({
 
       // 构建酒店数据
       const hotelData: Omit<Hotel, "id" | "createdAt" | "updatedAt"> = {
+        // 标识字段
+        merchantId: user?.userid || "",
+        merchantName: user?.username || "",
+        // 基本信息
         name: values.name,
+        nameEn: values.nameEn || "",
         star: values.star,
         province: values.province,
         city: values.city,
         address: values.address,
+        // 价格与时间
+        minPrice: values.minPrice || 0,
+        openTime: values.openTime || "",
+        // 图片相关
+        coverImage: values.coverImage || "",
+        images: values.images || [],
+        // 描述与标签
         description: values.description || "",
-        images: [], // 暂时为空，后续步骤完善
+        tags: values.tags || [],
+        // 设施
         facilities: [], // 暂时为空，后续步骤完善
+        // 审核与发布状态
         auditStatus: "pending", // 默认审核中
         publishStatus: "draft", // 默认未发布
-        merchantId: user?.userid || "",
-        merchantName: user?.username || "",
+        auditReason: "",
+        // 统计数据（默认值）
+        rating: 0,
+        reviewCount: 0,
+        favoriteCount: 0,
       };
       console.log("[HotelCreateModal] 构建的酒店数据:", hotelData);
 
@@ -131,7 +164,63 @@ const HotelCreateModal: React.FC<HotelCreateModalProps> = ({
   const handleCancel = () => {
     form.resetFields();
     setCities([]);
+    setCoverImageFileList([]);
+    setImagesFileList([]);
     onCancel();
+  };
+
+  /**
+   * 封面图片上传处理
+   */
+  const handleCoverImageUpload: UploadProps["customRequest"] = async (
+    options
+  ) => {
+    const { file, onSuccess, onError } = options;
+    try {
+      const url = await uploadHotelImage(file as File);
+      onSuccess?.(url);
+      form.setFieldValue("coverImage", url);
+      message.success("封面图片上传成功");
+    } catch (error) {
+      onError?.(error as Error);
+      message.error("封面图片上传失败");
+    }
+  };
+
+  /**
+   * 多图上传处理
+   */
+  const handleImagesUpload: UploadProps["customRequest"] = async (options) => {
+    const { file, onSuccess, onError } = options;
+    try {
+      const url = await uploadHotelImage(file as File);
+      onSuccess?.(url);
+      // 更新表单值
+      const currentImages = form.getFieldValue("images") || [];
+      form.setFieldValue("images", [...currentImages, url]);
+      message.success("图片上传成功");
+    } catch (error) {
+      onError?.(error as Error);
+      message.error("图片上传失败");
+    }
+  };
+
+  /**
+   * 封面图片移除处理
+   */
+  const handleCoverImageRemove = () => {
+    form.setFieldValue("coverImage", "");
+    setCoverImageFileList([]);
+  };
+
+  /**
+   * 多图移除处理
+   */
+  const handleImagesRemove = (file: UploadFile) => {
+    const currentImages = form.getFieldValue("images") || [];
+    const newImages = currentImages.filter((url: string) => url !== file.url);
+    form.setFieldValue("images", newImages);
+    setImagesFileList(imagesFileList.filter((f) => f.uid !== file.uid));
   };
 
   return (
@@ -163,6 +252,18 @@ const HotelCreateModal: React.FC<HotelCreateModalProps> = ({
           ]}
         >
           <Input placeholder="请输入酒店名称" maxLength={50} showCount />
+        </Form.Item>
+
+        <Form.Item
+          label="英文名称"
+          name="nameEn"
+          rules={[{ max: 100, message: "英文名称最多 100 个字符" }]}
+        >
+          <Input
+            placeholder="请输入英文名称（选填）"
+            maxLength={100}
+            showCount
+          />
         </Form.Item>
 
         <Form.Item
@@ -216,6 +317,33 @@ const HotelCreateModal: React.FC<HotelCreateModalProps> = ({
           <Input placeholder="请输入详细地址" maxLength={200} showCount />
         </Form.Item>
 
+        <Space.Compact style={{ width: "100%" }}>
+          <Form.Item
+            label="最低价格"
+            name="minPrice"
+            rules={[
+              { required: true, message: "请输入最低价格" },
+              { type: "number", min: 0, message: "价格不能小于 0" },
+            ]}
+            style={{ width: "50%", marginBottom: 0 }}
+          >
+            <Input
+              type="number"
+              placeholder="请输入最低价格"
+              prefix="¥"
+              suffix="/晚"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="开业时间"
+            name="openTime"
+            style={{ width: "50%", marginBottom: 0 }}
+          >
+            <Input placeholder="请输入开业时间（选填）" />
+          </Form.Item>
+        </Space.Compact>
+
         <Form.Item
           label="酒店描述"
           name="description"
@@ -227,6 +355,55 @@ const HotelCreateModal: React.FC<HotelCreateModalProps> = ({
             maxLength={500}
             showCount
           />
+        </Form.Item>
+
+        <Form.Item label="酒店标签" name="tags">
+          <Select
+            mode="tags"
+            placeholder="请输入标签，按回车添加（选填）"
+            maxTagCount={10}
+            style={{ width: "100%" }}
+          />
+        </Form.Item>
+
+        <Divider />
+
+        {/* 图片上传区域 */}
+        <div style={{ marginBottom: 16 }}>
+          <span style={{ fontSize: 16, fontWeight: 500 }}>图片管理</span>
+        </div>
+
+        <Form.Item label="封面图片" name="coverImage">
+          <Upload
+            listType="picture-card"
+            fileList={coverImageFileList}
+            customRequest={handleCoverImageUpload}
+            onRemove={handleCoverImageRemove}
+            maxCount={1}
+            accept="image/*"
+          >
+            {coverImageFileList.length === 0 && (
+              <div>
+                <div style={{ marginTop: 8 }}>上传封面</div>
+              </div>
+            )}
+          </Upload>
+        </Form.Item>
+
+        <Form.Item label="酒店图片" name="images">
+          <Upload
+            listType="picture-card"
+            fileList={imagesFileList}
+            customRequest={handleImagesUpload}
+            onRemove={handleImagesRemove}
+            multiple
+            maxCount={10}
+            accept="image/*"
+          >
+            <div>
+              <div style={{ marginTop: 8 }}>上传图片</div>
+            </div>
+          </Upload>
         </Form.Item>
       </Form>
     </Modal>

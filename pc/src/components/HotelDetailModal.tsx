@@ -117,8 +117,14 @@ const HotelDetailModal: React.FC<HotelDetailModalProps> = ({
               <Descriptions.Item label="酒店名称">
                 {hotel.name}
               </Descriptions.Item>
+              <Descriptions.Item label="英文名称">
+                {hotel.nameEn || "-"}
+              </Descriptions.Item>
               <Descriptions.Item label="星级">
                 <StarDisplay star={hotel.star} />
+              </Descriptions.Item>
+              <Descriptions.Item label="最低价格">
+                ¥{hotel.minPrice}/晚起
               </Descriptions.Item>
               <Descriptions.Item label="省份">
                 {hotel.province}
@@ -127,18 +133,26 @@ const HotelDetailModal: React.FC<HotelDetailModalProps> = ({
               <Descriptions.Item label="详细地址" span={2}>
                 {hotel.address}
               </Descriptions.Item>
+              <Descriptions.Item label="开业时间">
+                {hotel.openTime || "-"}
+              </Descriptions.Item>
+            </Descriptions>
+
+            {/* 审核与发布状态 */}
+            <Divider />
+            <Descriptions title="审核与发布" bordered column={2} size="small">
               <Descriptions.Item label="审核状态">
                 <AuditStatusTag
                   status={hotel.auditStatus}
-                  reason={hotel.rejectReason}
+                  reason={hotel.auditReason}
                 />
               </Descriptions.Item>
               <Descriptions.Item label="发布状态">
                 <PublishStatusTag status={hotel.publishStatus} />
               </Descriptions.Item>
-              {hotel.rejectReason && (
+              {hotel.auditReason && hotel.auditStatus === "rejected" && (
                 <Descriptions.Item label="不通过原因" span={2}>
-                  <span style={{ color: "#ff4d4f" }}>{hotel.rejectReason}</span>
+                  <span style={{ color: "#ff4d4f" }}>{hotel.auditReason}</span>
                 </Descriptions.Item>
               )}
               <Descriptions.Item label="上传人">
@@ -152,10 +166,57 @@ const HotelDetailModal: React.FC<HotelDetailModalProps> = ({
               </Descriptions.Item>
             </Descriptions>
 
+            {/* 统计数据 */}
+            <Divider />
+            <Descriptions title="统计数据" bordered column={3} size="small">
+              <Descriptions.Item label="评分">
+                <span style={{ color: "#faad14", fontWeight: "bold" }}>
+                  {hotel.rating.toFixed(1)}
+                </span>
+                /5.0
+              </Descriptions.Item>
+              <Descriptions.Item label="评论数">
+                {hotel.reviewCount} 条
+              </Descriptions.Item>
+              <Descriptions.Item label="收藏数">
+                {hotel.favoriteCount} 次
+              </Descriptions.Item>
+            </Descriptions>
+
             {/* 酒店描述 */}
             <Divider />
             <Title level={5}>酒店描述</Title>
             <p style={{ color: "#666" }}>{hotel.description || "暂无描述"}</p>
+
+            {/* 酒店标签 */}
+            {hotel.tags && hotel.tags.length > 0 && (
+              <>
+                <Divider />
+                <Title level={5}>酒店标签</Title>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {hotel.tags.map((tag, index) => (
+                    <Tag key={index} color="blue">
+                      {tag}
+                    </Tag>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* 封面图片 */}
+            {hotel.coverImage && (
+              <>
+                <Divider />
+                <Title level={5}>封面图片</Title>
+                <Image
+                  src={hotel.coverImage}
+                  width={300}
+                  height={200}
+                  style={{ objectFit: "cover", borderRadius: 4 }}
+                  placeholder
+                />
+              </>
+            )}
 
             {/* 酒店图片 */}
             {hotel.images && hotel.images.length > 0 && (

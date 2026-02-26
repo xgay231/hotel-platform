@@ -302,7 +302,7 @@ const HotelList: React.FC = () => {
       width: 100,
       align: "center",
       render: (status: Hotel["auditStatus"], record: Hotel) => (
-        <AuditStatusTag status={status} reason={record.rejectReason} />
+        <AuditStatusTag status={status} reason={record.auditReason} />
       ),
     },
     {

@@ -16,14 +16,19 @@ import {
   Popconfirm,
   Empty,
   Divider,
+  Upload,
+  Image,
 } from "antd";
 import type { Hotel, HotelStar, RoomType } from "../types";
 import {
   getHotelWithRooms,
   updateHotel,
   deleteRoom,
+  uploadHotelImage,
+  uploadHotelImages,
 } from "../services/hotelService";
 import RoomTypeFormModal from "./RoomTypeFormModal";
+import type { UploadFile, UploadProps } from "antd/es/upload/interface";
 
 const { TextArea } = Input;
 
@@ -77,6 +82,13 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
 
+  // 图片上传相关状态
+  const [coverImageFileList, setCoverImageFileList] = useState<UploadFile[]>(
+    []
+  );
+  const [imagesFileList, setImagesFileList] = useState<UploadFile[]>([]);
+  const [uploading, setUploading] = useState(false);
+
   // 房型相关状态
   const [rooms, setRooms] = useState<RoomType[]>([]);
   const [roomFormOpen, setRoomFormOpen] = useState(false);
@@ -109,12 +121,38 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
       // 回填表单数据
       form.setFieldsValue({
         name: hotel.name,
+        nameEn: hotel.nameEn || "",
         star: hotel.star,
         province: hotel.province,
         city: hotel.city,
         address: hotel.address,
+        minPrice: hotel.minPrice,
+        openTime: hotel.openTime || "",
         description: hotel.description,
+        tags: hotel.tags || [],
       });
+
+      // 回填图片
+      if (hotel.coverImage) {
+        setCoverImageFileList([
+          {
+            uid: "-1",
+            name: "cover.jpg",
+            status: "done",
+            url: hotel.coverImage,
+          },
+        ]);
+      }
+      if (hotel.images && hotel.images.length > 0) {
+        setImagesFileList(
+          hotel.images.map((url, index) => ({
+            uid: `-${index}`,
+            name: `image-${index}.jpg`,
+            status: "done" as const,
+            url,
+          }))
+        );
+      }
 
       // 设置房型列表
       setRooms(roomList);
@@ -161,11 +199,17 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
       // 构建更新数据
       const updateData: Partial<Hotel> = {
         name: values.name,
+        nameEn: values.nameEn || "",
         star: values.star,
         province: values.province,
         city: values.city,
         address: values.address,
+        minPrice: values.minPrice || 0,
+        openTime: values.openTime || "",
         description: values.description || "",
+        tags: values.tags || [],
+        coverImage: values.coverImage || "",
+        images: values.images || [],
       };
       console.log("[HotelEditModal] 更新数据:", updateData);
 
@@ -198,6 +242,8 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
     setCities([]);
     setRooms([]);
     setEditingRoom(undefined);
+    setCoverImageFileList([]);
+    setImagesFileList([]);
     onCancel();
   };
 
@@ -252,6 +298,60 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
     setEditingRoom(undefined);
   };
 
+  /**
+   * 封面图片上传处理
+   */
+  const handleCoverImageUpload: UploadProps["customRequest"] = async (
+    options
+  ) => {
+    const { file, onSuccess, onError } = options;
+    try {
+      const url = await uploadHotelImage(file as File);
+      onSuccess?.(url);
+      form.setFieldValue("coverImage", url);
+      message.success("封面图片上传成功");
+    } catch (error) {
+      onError?.(error as Error);
+      message.error("封面图片上传失败");
+    }
+  };
+
+  /**
+   * 多图上传处理
+   */
+  const handleImagesUpload: UploadProps["customRequest"] = async (options) => {
+    const { file, onSuccess, onError } = options;
+    try {
+      const url = await uploadHotelImage(file as File);
+      onSuccess?.(url);
+      // 更新表单值
+      const currentImages = form.getFieldValue("images") || [];
+      form.setFieldValue("images", [...currentImages, url]);
+      message.success("图片上传成功");
+    } catch (error) {
+      onError?.(error as Error);
+      message.error("图片上传失败");
+    }
+  };
+
+  /**
+   * 封面图片移除处理
+   */
+  const handleCoverImageRemove = () => {
+    form.setFieldValue("coverImage", "");
+    setCoverImageFileList([]);
+  };
+
+  /**
+   * 多图移除处理
+   */
+  const handleImagesRemove = (file: UploadFile) => {
+    const currentImages = form.getFieldValue("images") || [];
+    const newImages = currentImages.filter((url: string) => url !== file.url);
+    form.setFieldValue("images", newImages);
+    setImagesFileList(imagesFileList.filter((f) => f.uid !== file.uid));
+  };
+
   return (
     <>
       <Modal
@@ -275,6 +375,18 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
             ]}
           >
             <Input placeholder="请输入酒店名称" maxLength={50} showCount />
+          </Form.Item>
+
+          <Form.Item
+            label="英文名称"
+            name="nameEn"
+            rules={[{ max: 100, message: "英文名称最多 100 个字符" }]}
+          >
+            <Input
+              placeholder="请输入英文名称（选填）"
+              maxLength={100}
+              showCount
+            />
           </Form.Item>
 
           <Form.Item
@@ -328,6 +440,33 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
             <Input placeholder="请输入详细地址" maxLength={200} showCount />
           </Form.Item>
 
+          <Space.Compact style={{ width: "100%" }}>
+            <Form.Item
+              label="最低价格"
+              name="minPrice"
+              rules={[
+                { required: true, message: "请输入最低价格" },
+                { type: "number", min: 0, message: "价格不能小于 0" },
+              ]}
+              style={{ width: "50%", marginBottom: 0 }}
+            >
+              <Input
+                type="number"
+                placeholder="请输入最低价格"
+                prefix="¥"
+                suffix="/晚"
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="开业时间"
+              name="openTime"
+              style={{ width: "50%", marginBottom: 0 }}
+            >
+              <Input placeholder="请输入开业时间（选填）" />
+            </Form.Item>
+          </Space.Compact>
+
           <Form.Item
             label="酒店描述"
             name="description"
@@ -339,6 +478,55 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
               maxLength={500}
               showCount
             />
+          </Form.Item>
+
+          <Form.Item label="酒店标签" name="tags">
+            <Select
+              mode="tags"
+              placeholder="请输入标签，按回车添加（选填）"
+              maxTagCount={10}
+              style={{ width: "100%" }}
+            />
+          </Form.Item>
+
+          <Divider />
+
+          {/* 图片上传区域 */}
+          <div style={{ marginBottom: 16 }}>
+            <span style={{ fontSize: 16, fontWeight: 500 }}>图片管理</span>
+          </div>
+
+          <Form.Item label="封面图片" name="coverImage">
+            <Upload
+              listType="picture-card"
+              fileList={coverImageFileList}
+              customRequest={handleCoverImageUpload}
+              onRemove={handleCoverImageRemove}
+              maxCount={1}
+              accept="image/*"
+            >
+              {coverImageFileList.length === 0 && (
+                <div>
+                  <div style={{ marginTop: 8 }}>上传封面</div>
+                </div>
+              )}
+            </Upload>
+          </Form.Item>
+
+          <Form.Item label="酒店图片" name="images">
+            <Upload
+              listType="picture-card"
+              fileList={imagesFileList}
+              customRequest={handleImagesUpload}
+              onRemove={handleImagesRemove}
+              multiple
+              maxCount={10}
+              accept="image/*"
+            >
+              <div>
+                <div style={{ marginTop: 8 }}>上传图片</div>
+              </div>
+            </Upload>
           </Form.Item>
 
           <Divider />

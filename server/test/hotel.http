@@ -39,7 +39,6 @@ Content-Type: application/json
   "cover_image": "https://example.com/hotel4.png",
   "desc": "位于深圳湾科技园核心区域，周边科技企业云集，商务出行首选。",
   "min_price": 399,
-  "quick_flag": "商务、免费WiFi、会议室",
   "province": "广东",
   "city": "深圳",
   "image_url": "https://example.com/banner4.png"
