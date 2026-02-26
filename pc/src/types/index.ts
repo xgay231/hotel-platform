@@ -65,6 +65,7 @@ export type AuditStatus = (typeof AuditStatus)[keyof typeof AuditStatus];
 export const PublishStatus = {
   DRAFT: "draft", // 未发布
   PUBLISHED: "published", // 已发布
+  OFFLINE: "offline", // 已下线
 } as const;
 
 export type PublishStatus = (typeof PublishStatus)[keyof typeof PublishStatus];
@@ -135,36 +136,37 @@ export interface HotelRequest {
   description: string;
   images: string[];
   facilities: HotelFacility[];
-  roomTypes?: RoomTypeRequest[];
+  roomTypes?: CreateRoomRequest[];
 }
 
 // ==================== 房型相关 ====================
 
-/** 房型信息 */
+/** 房型信息 - 与后端 HotelRoom 模型对齐 */
 export interface RoomType {
-  id: string;
-  hotelId: string;
-  name: string;
-  area: number; // 面积（平方米）
-  bedType: string; // 床型
-  maxOccupancy: number; // 最大入住人数
+  roomId: string; // room_id
+  hotelId: string; // hotel_id
+  name: string; // 房型名称
   price: number; // 价格
-  amenities: string[]; // 设施
-  images: string[];
-  createdAt: string;
-  updatedAt: string;
+  desc: string; // 描述
+  tags: string[]; // 标签
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-/** 房型创建/更新请求 */
-export interface RoomTypeRequest {
-  id?: string;
+/** 房型创建请求 */
+export interface CreateRoomRequest {
   name: string;
-  area: number;
-  bedType: string;
-  maxOccupancy: number;
   price: number;
-  amenities: string[];
-  images: string[];
+  desc: string;
+  tags?: string[];
+}
+
+/** 房型更新请求 */
+export interface UpdateRoomRequest {
+  name?: string;
+  price?: number;
+  desc?: string;
+  tags?: string[];
 }
 
 /** 房型列表响应 */

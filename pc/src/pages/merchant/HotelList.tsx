@@ -4,12 +4,34 @@
  */
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Table, Card, Button, Tag, Space, Empty, Tooltip, message } from "antd";
+import {
+  Table,
+  Card,
+  Button,
+  Tag,
+  Space,
+  Empty,
+  Tooltip,
+  message,
+  Popconfirm,
+} from "antd";
 import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
-import { EditOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SendOutlined,
+  StopOutlined,
+  PlayCircleOutlined,
+} from "@ant-design/icons";
 import type { Hotel } from "../../types";
 import { AuditStatus, PublishStatus } from "../../types";
-import { getMerchantHotels } from "../../services/hotelService";
+import {
+  getMerchantHotels,
+  publishHotel,
+  offlineHotel,
+  onlineHotel,
+} from "../../services/hotelService";
 import useUserStore from "../../store/userStore";
 import HotelCreateModal from "../../components/HotelCreateModal";
 import HotelEditModal from "../../components/HotelEditModal";
@@ -56,6 +78,7 @@ const PublishStatusTag: React.FC<{ status: Hotel["publishStatus"] }> = ({
   > = {
     draft: { color: "default", text: "未发布" },
     published: { color: "blue", text: "已发布" },
+    offline: { color: "gray", text: "已下线" },
   };
 
   const { color, text } = config[status] || { color: "default", text: status };
@@ -171,6 +194,72 @@ const HotelList: React.FC = () => {
     fetchHotels(pagination.current, pagination.pageSize);
   };
 
+  /**
+   * 发布酒店
+   */
+  const handlePublish = async (hotelId: string) => {
+    try {
+      await publishHotel(hotelId);
+      message.success("酒店发布成功");
+      // 刷新列表
+      fetchHotels(pagination.current, pagination.pageSize);
+    } catch (error: any) {
+      message.error(error.message || "发布失败");
+    }
+  };
+
+  /**
+   * 下线酒店
+   */
+  const handleOffline = async (hotelId: string) => {
+    try {
+      await offlineHotel(hotelId);
+      message.success("酒店下线成功");
+      // 刷新列表
+      fetchHotels(pagination.current, pagination.pageSize);
+    } catch (error: any) {
+      message.error(error.message || "下线失败");
+    }
+  };
+
+  /**
+   * 上线酒店
+   */
+  const handleOnline = async (hotelId: string) => {
+    try {
+      await onlineHotel(hotelId);
+      message.success("酒店上线成功");
+      // 刷新列表
+      fetchHotels(pagination.current, pagination.pageSize);
+    } catch (error: any) {
+      message.error(error.message || "上线失败");
+    }
+  };
+
+  /**
+   * 判断是否可以发布
+   * 只有审核通过且未发布的酒店可以发布
+   */
+  const canPublish = (hotel: Hotel): boolean => {
+    return hotel.auditStatus === "approved" && hotel.publishStatus === "draft";
+  };
+
+  /**
+   * 判断是否可以下线
+   * 只有已发布的酒店可以下线
+   */
+  const canOffline = (hotel: Hotel): boolean => {
+    return hotel.publishStatus === "published";
+  };
+
+  /**
+   * 判断是否可以上线
+   * 只有已下线的酒店可以上线
+   */
+  const canOnline = (hotel: Hotel): boolean => {
+    return hotel.publishStatus === "offline";
+  };
+
   // 表格列定义
   const columns: ColumnsType<Hotel> = [
     {
@@ -236,17 +325,58 @@ const HotelList: React.FC = () => {
     {
       title: "操作",
       key: "action",
-      width: 100,
+      width: 280,
       fixed: "right",
       render: (_: unknown, record: Hotel) => (
-        <Button
-          type="link"
-          size="small"
-          icon={<EditOutlined />}
-          onClick={() => handleEdit(record)}
-        >
-          编辑
-        </Button>
+        <Space size="small">
+          <Button
+            type="link"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+          >
+            编辑
+          </Button>
+          {canPublish(record) && (
+            <Popconfirm
+              title="确认发布"
+              description="确认发布该酒店吗？"
+              onConfirm={() => handlePublish(record.id)}
+              okText="确认"
+              cancelText="取消"
+            >
+              <Button type="link" size="small" icon={<SendOutlined />}>
+                发布
+              </Button>
+            </Popconfirm>
+          )}
+          {canOffline(record) && (
+            <Popconfirm
+              title="确认下线"
+              description="确认下线该酒店吗？"
+              onConfirm={() => handleOffline(record.id)}
+              okText="确认"
+              cancelText="取消"
+            >
+              <Button type="link" size="small" icon={<StopOutlined />}>
+                下线
+              </Button>
+            </Popconfirm>
+          )}
+          {canOnline(record) && (
+            <Popconfirm
+              title="确认上线"
+              description="确认上线该酒店吗？"
+              onConfirm={() => handleOnline(record.id)}
+              okText="确认"
+              cancelText="取消"
+            >
+              <Button type="link" size="small" icon={<PlayCircleOutlined />}>
+                上线
+              </Button>
+            </Popconfirm>
+          )}
+        </Space>
       ),
     },
   ];
@@ -289,7 +419,7 @@ const HotelList: React.FC = () => {
             pageSizeOptions: ["10"],
           }}
           onChange={handleTableChange}
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1400 }}
           locale={{
             emptyText: (
               <Empty

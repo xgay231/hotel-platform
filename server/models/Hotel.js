@@ -88,7 +88,7 @@ const hotelSchema = new mongoose.Schema(
     },
     publish_status: {
       type: String,
-      enum: ["已发布", "未发布"],
+      enum: ["已发布", "未发布", "已下线"],
       default: "未发布",
     },
     rating: {

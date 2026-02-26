@@ -261,7 +261,9 @@ const updateHotel = async (req, res) => {
 const createRoom = async (req, res) => {
   try {
     const { id } = req.params;
-    const { room_id, name, price, desc, tags } = req.body;
+    const { name, price, desc, tags } = req.body;
+
+    console.log("[createRoom] 请求体:", req.body);
 
     // 检查酒店是否存在
     const hotel = await Hotel.findOne({ hotel_id: id });
@@ -272,14 +274,10 @@ const createRoom = async (req, res) => {
       });
     }
 
-    // 检查 room_id 是否已存在
-    const existingRoom = await HotelRoom.findOne({ room_id });
-    if (existingRoom) {
-      return res.status(400).json({
-        success: false,
-        message: "房型ID已存在",
-      });
-    }
+    // 自动生成 room_id
+    const room_id = `room-${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2, 9)}`;
 
     const room = await HotelRoom.create({
       room_id,
@@ -290,12 +288,14 @@ const createRoom = async (req, res) => {
       tags,
     });
 
+    console.log("[createRoom] 房型创建成功:", room);
     res.status(201).json({
       success: true,
       message: "房型创建成功",
       data: room,
     });
   } catch (error) {
+    console.error("[createRoom] 创建房型失败:", error);
     res.status(500).json({
       success: false,
       message: "创建房型失败",
@@ -370,12 +370,271 @@ const createBanner = async (req, res) => {
   }
 };
 
+/**
+ * 更新房型
+ * @route PUT /api/hotels/:id/rooms/:roomId
+ */
+const updateRoom = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { roomId } = req.params;
+    const { name, price, desc, tags } = req.body;
+
+    console.log("[updateRoom] 更新房型:", { hotelId: id, roomId });
+    console.log("[updateRoom] 更新数据:", req.body);
+
+    // 检查酒店是否存在
+    const hotel = await Hotel.findOne({ hotel_id: id });
+    if (!hotel) {
+      return res.status(404).json({
+        success: false,
+        message: "酒店不存在",
+      });
+    }
+
+    // 查找房型
+    const room = await HotelRoom.findOne({ room_id: roomId, hotel_id: id });
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: "房型不存在",
+      });
+    }
+
+    // 更新字段
+    if (name !== undefined) room.name = name;
+    if (price !== undefined) room.price = price;
+    if (desc !== undefined) room.desc = desc;
+    if (tags !== undefined) room.tags = tags;
+
+    await room.save();
+
+    console.log("[updateRoom] 房型更新成功:", room);
+    res.json({
+      success: true,
+      message: "房型更新成功",
+      data: room,
+    });
+  } catch (error) {
+    console.error("[updateRoom] 更新房型失败:", error);
+    res.status(500).json({
+      success: false,
+      message: "更新房型失败",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * 删除房型
+ * @route DELETE /api/hotels/:id/rooms/:roomId
+ */
+const deleteRoom = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { roomId } = req.params;
+
+    console.log("[deleteRoom] 删除房型:", { hotelId: id, roomId });
+
+    // 检查酒店是否存在
+    const hotel = await Hotel.findOne({ hotel_id: id });
+    if (!hotel) {
+      return res.status(404).json({
+        success: false,
+        message: "酒店不存在",
+      });
+    }
+
+    // 查找并删除房型
+    const room = await HotelRoom.findOneAndDelete({
+      room_id: roomId,
+      hotel_id: id,
+    });
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: "房型不存在",
+      });
+    }
+
+    console.log("[deleteRoom] 房型删除成功:", room);
+    res.json({
+      success: true,
+      message: "房型删除成功",
+    });
+  } catch (error) {
+    console.error("[deleteRoom] 删除房型失败:", error);
+    res.status(500).json({
+      success: false,
+      message: "删除房型失败",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * 发布酒店
+ * @route PUT /api/hotels/:id/publish
+ * @desc 只有审核通过且未发布的酒店可以发布
+ */
+const publishHotel = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log("[publishHotel] 发布酒店:", id);
+
+    // 查找酒店
+    const hotel = await Hotel.findOne({ hotel_id: id });
+    if (!hotel) {
+      return res.status(404).json({
+        success: false,
+        message: "酒店不存在",
+      });
+    }
+
+    // 检查审核状态
+    if (hotel.audit_status !== "通过") {
+      return res.status(400).json({
+        success: false,
+        message: "只有审核通过的酒店才能发布",
+      });
+    }
+
+    // 检查发布状态
+    if (hotel.publish_status === "已发布") {
+      return res.status(400).json({
+        success: false,
+        message: "酒店已发布，无需重复发布",
+      });
+    }
+
+    // 更新发布状态
+    hotel.publish_status = "已发布";
+    await hotel.save();
+
+    console.log("[publishHotel] 酒店发布成功:", hotel);
+    res.json({
+      success: true,
+      message: "酒店发布成功",
+      data: hotel,
+    });
+  } catch (error) {
+    console.error("[publishHotel] 发布酒店失败:", error);
+    res.status(500).json({
+      success: false,
+      message: "发布酒店失败",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * 下线酒店
+ * @route PUT /api/hotels/:id/offline
+ * @desc 只有已发布的酒店可以下线
+ */
+const offlineHotel = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log("[offlineHotel] 下线酒店:", id);
+
+    // 查找酒店
+    const hotel = await Hotel.findOne({ hotel_id: id });
+    if (!hotel) {
+      return res.status(404).json({
+        success: false,
+        message: "酒店不存在",
+      });
+    }
+
+    // 检查发布状态
+    if (hotel.publish_status !== "已发布") {
+      return res.status(400).json({
+        success: false,
+        message: "只有已发布的酒店才能下线",
+      });
+    }
+
+    // 更新发布状态
+    hotel.publish_status = "已下线";
+    await hotel.save();
+
+    console.log("[offlineHotel] 酒店下线成功:", hotel);
+    res.json({
+      success: true,
+      message: "酒店下线成功",
+      data: hotel,
+    });
+  } catch (error) {
+    console.error("[offlineHotel] 下线酒店失败:", error);
+    res.status(500).json({
+      success: false,
+      message: "下线酒店失败",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * 上线酒店
+ * @route PUT /api/hotels/:id/online
+ * @desc 只有已下线的酒店可以上线
+ */
+const onlineHotel = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log("[onlineHotel] 上线酒店:", id);
+
+    // 查找酒店
+    const hotel = await Hotel.findOne({ hotel_id: id });
+    if (!hotel) {
+      return res.status(404).json({
+        success: false,
+        message: "酒店不存在",
+      });
+    }
+
+    // 检查发布状态
+    if (hotel.publish_status !== "已下线") {
+      return res.status(400).json({
+        success: false,
+        message: "只有已下线的酒店才能上线",
+      });
+    }
+
+    // 更新发布状态
+    hotel.publish_status = "已发布";
+    await hotel.save();
+
+    console.log("[onlineHotel] 酒店上线成功:", hotel);
+    res.json({
+      success: true,
+      message: "酒店上线成功",
+      data: hotel,
+    });
+  } catch (error) {
+    console.error("[onlineHotel] 上线酒店失败:", error);
+    res.status(500).json({
+      success: false,
+      message: "上线酒店失败",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getHotels,
   createHotel,
   getHotelById,
   updateHotel,
   createRoom,
+  updateRoom,
+  deleteRoom,
   getBanners,
   createBanner,
+  publishHotel,
+  offlineHotel,
+  onlineHotel,
 };

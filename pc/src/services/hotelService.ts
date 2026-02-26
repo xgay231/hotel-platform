@@ -3,7 +3,14 @@
  * 提供酒店相关的 API 调用和 Mock 数据
  */
 
-import type { Hotel, HotelListParams, HotelListResponse } from "../types";
+import type {
+  Hotel,
+  HotelListParams,
+  HotelListResponse,
+  RoomType,
+  CreateRoomRequest,
+  UpdateRoomRequest,
+} from "../types";
 import { request } from "./api";
 
 // ==================== Mock 数据 ====================
@@ -18,7 +25,11 @@ const generateMockHotels = (): Hotel[] => {
     "approved",
     "rejected",
   ];
-  const publishStatuses: Hotel["publishStatus"][] = ["draft", "published"];
+  const publishStatuses: Hotel["publishStatus"][] = [
+    "draft",
+    "published",
+    "offline",
+  ];
   const provinces = [
     "北京市",
     "上海市",
@@ -127,6 +138,7 @@ const mapPublishStatus = (status: string): Hotel["publishStatus"] => {
   const statusMap: Record<string, Hotel["publishStatus"]> = {
     未发布: "draft",
     已发布: "published",
+    已下线: "offline",
   };
   return statusMap[status] || "draft";
 };
@@ -138,6 +150,7 @@ const mapPublishStatusToBackend = (status: Hotel["publishStatus"]): string => {
   const statusMap: Record<Hotel["publishStatus"], string> = {
     draft: "未发布",
     published: "已发布",
+    offline: "已下线",
   };
   return statusMap[status] || "未发布";
 };
@@ -194,6 +207,22 @@ const mapHotelToBackend = (frontendHotel: Partial<Hotel>): any => {
     min_price: 0,
     quick_flag: "N",
     tags: [],
+  };
+};
+
+/**
+ * 后端房型数据映射到前端
+ */
+const mapRoomFromBackend = (backendRoom: any): RoomType => {
+  return {
+    roomId: backendRoom.room_id,
+    hotelId: backendRoom.hotel_id,
+    name: backendRoom.name,
+    price: backendRoom.price,
+    desc: backendRoom.desc,
+    tags: backendRoom.tags || [],
+    createdAt: backendRoom.createdAt,
+    updatedAt: backendRoom.updatedAt,
   };
 };
 
@@ -294,6 +323,47 @@ export const getHotelById = async (id: string): Promise<Hotel | null> => {
     }>(`/hotels/${id}`);
 
     return mapHotelFromBackend(response.data.hotel);
+  } catch (error) {
+    console.error("获取酒店详情失败:", error);
+    throw error;
+  }
+};
+
+/**
+ * 获取酒店详情（含房型）
+ * @param id 酒店 ID
+ * @returns 酒店详情和房型列表
+ */
+export const getHotelWithRooms = async (
+  id: string
+): Promise<{ hotel: Hotel; rooms: RoomType[] }> => {
+  if (USE_MOCK) {
+    // Mock 模式
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const hotel = mockHotels.find((h) => h.id === id);
+    if (!hotel) {
+      throw new Error("酒店不存在");
+    }
+    return {
+      hotel,
+      rooms: [], // Mock 模式暂无房型数据
+    };
+  }
+
+  // 真实 API 模式
+  try {
+    const response = await request.get<{
+      success: boolean;
+      data: {
+        hotel: any;
+        rooms: any[];
+      };
+    }>(`/hotels/${id}`);
+
+    return {
+      hotel: mapHotelFromBackend(response.data.hotel),
+      rooms: response.data.rooms.map(mapRoomFromBackend),
+    };
   } catch (error) {
     console.error("获取酒店详情失败:", error);
     throw error;
@@ -405,6 +475,231 @@ export const deleteHotel = async (id: string): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error("删除酒店失败:", error);
+    throw error;
+  }
+};
+
+/**
+ * 前端房型数据映射到后端
+ */
+const mapRoomToBackend = (frontendRoom: CreateRoomRequest): any => {
+  return {
+    name: frontendRoom.name,
+    price: frontendRoom.price,
+    desc: frontendRoom.desc,
+    tags: frontendRoom.tags || [],
+  };
+};
+
+/**
+ * 创建房型
+ * @param hotelId 酒店 ID
+ * @param data 房型数据
+ * @returns 创建的房型
+ */
+export const createRoom = async (
+  hotelId: string,
+  data: CreateRoomRequest
+): Promise<RoomType> => {
+  if (USE_MOCK) {
+    // Mock 模式
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    return {
+      roomId: `room-${Date.now()}`,
+      hotelId,
+      name: data.name,
+      price: data.price,
+      desc: data.desc,
+      tags: data.tags || [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
+  // 真实 API 模式
+  try {
+    console.log("[hotelService.createRoom] 前端数据:", data);
+    const backendData = mapRoomToBackend(data);
+    console.log("[hotelService.createRoom] 映射后的后端数据:", backendData);
+    const response = await request.post<{
+      success: boolean;
+      data: any;
+    }>(`/hotels/${hotelId}/rooms`, backendData);
+    console.log("[hotelService.createRoom] API 响应:", response);
+
+    return mapRoomFromBackend(response.data);
+  } catch (error) {
+    console.error("创建房型失败:", error);
+    throw error;
+  }
+};
+
+/**
+ * 更新房型
+ * @param hotelId 酒店 ID
+ * @param roomId 房型 ID
+ * @param data 更新数据
+ * @returns 更新后的房型
+ */
+export const updateRoom = async (
+  hotelId: string,
+  roomId: string,
+  data: UpdateRoomRequest
+): Promise<RoomType> => {
+  if (USE_MOCK) {
+    // Mock 模式
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    return {
+      roomId,
+      hotelId,
+      name: data.name || "",
+      price: data.price || 0,
+      desc: data.desc || "",
+      tags: data.tags || [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
+  // 真实 API 模式
+  try {
+    const response = await request.put<{
+      success: boolean;
+      data: any;
+    }>(`/hotels/${hotelId}/rooms/${roomId}`, data);
+
+    return mapRoomFromBackend(response.data);
+  } catch (error) {
+    console.error("更新房型失败:", error);
+    throw error;
+  }
+};
+
+/**
+ * 删除房型
+ * @param hotelId 酒店 ID
+ * @param roomId 房型 ID
+ */
+export const deleteRoom = async (
+  hotelId: string,
+  roomId: string
+): Promise<void> => {
+  if (USE_MOCK) {
+    // Mock 模式
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    return;
+  }
+
+  // 真实 API 模式
+  try {
+    await request.delete(`/hotels/${hotelId}/rooms/${roomId}`);
+  } catch (error) {
+    console.error("删除房型失败:", error);
+    throw error;
+  }
+};
+
+/**
+ * 发布酒店
+ * @param hotelId 酒店 ID
+ * @returns 更新后的酒店信息
+ */
+export const publishHotel = async (hotelId: string): Promise<Hotel> => {
+  if (USE_MOCK) {
+    // Mock 模式
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const hotel = mockHotels.find((h) => h.id === hotelId);
+    if (!hotel) {
+      throw new Error("酒店不存在");
+    }
+    if (hotel.auditStatus !== "approved") {
+      throw new Error("只有审核通过的酒店才能发布");
+    }
+    if (hotel.publishStatus === "published") {
+      throw new Error("酒店已发布，无需重复发布");
+    }
+    hotel.publishStatus = "published";
+    return hotel;
+  }
+
+  // 真实 API 模式
+  try {
+    const response = await request.put<{
+      success: boolean;
+      data: any;
+    }>(`/hotels/${hotelId}/publish`);
+
+    return mapHotelFromBackend(response.data);
+  } catch (error) {
+    console.error("发布酒店失败:", error);
+    throw error;
+  }
+};
+
+/**
+ * 下线酒店
+ * @param hotelId 酒店 ID
+ * @returns 更新后的酒店信息
+ */
+export const offlineHotel = async (hotelId: string): Promise<Hotel> => {
+  if (USE_MOCK) {
+    // Mock 模式
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const hotel = mockHotels.find((h) => h.id === hotelId);
+    if (!hotel) {
+      throw new Error("酒店不存在");
+    }
+    if (hotel.publishStatus !== "published") {
+      throw new Error("只有已发布的酒店才能下线");
+    }
+    hotel.publishStatus = "offline";
+    return hotel;
+  }
+
+  // 真实 API 模式
+  try {
+    const response = await request.put<{
+      success: boolean;
+      data: any;
+    }>(`/hotels/${hotelId}/offline`);
+
+    return mapHotelFromBackend(response.data);
+  } catch (error) {
+    console.error("下线酒店失败:", error);
+    throw error;
+  }
+};
+
+/**
+ * 上线酒店
+ * @param hotelId 酒店 ID
+ * @returns 更新后的酒店信息
+ */
+export const onlineHotel = async (hotelId: string): Promise<Hotel> => {
+  if (USE_MOCK) {
+    // Mock 模式
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const hotel = mockHotels.find((h) => h.id === hotelId);
+    if (!hotel) {
+      throw new Error("酒店不存在");
+    }
+    if (hotel.publishStatus !== "offline") {
+      throw new Error("只有已下线的酒店才能上线");
+    }
+    hotel.publishStatus = "published";
+    return hotel;
+  }
+
+  // 真实 API 模式
+  try {
+    const response = await request.put<{
+      success: boolean;
+      data: any;
+    }>(`/hotels/${hotelId}/online`);
+
+    return mapHotelFromBackend(response.data);
+  } catch (error) {
+    console.error("上线酒店失败:", error);
     throw error;
   }
 };
