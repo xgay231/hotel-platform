@@ -1,0 +1,32 @@
+.hotel-list-page {
+  min-height: 100vh;
+  background: #f5f6f8;
+  padding-bottom: 40px;
+}
+
+.status-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.status-text {
+  font-size: 28px;
+  color: #888;
+}
+
+.list-wrap {
+  padding: 20px 24px;
+}
+
+.page-status {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0 40px;
+}
+
+.page-status-text {
+  font-size: 24px;
+  color: #999;
+}

@@ -35,9 +35,16 @@
   text-align: center;
   font-size: 28rpx;
   color: #666;
+  transition: all 0.2s ease;
+
   &.active {
     color: #007aff;
     font-weight: 500;
+  }
+
+  &.disabled {
+    color: #ccc;
+    cursor: not-allowed;
   }
 }
 
@@ -64,13 +71,6 @@
 .form-item {
   display: flex;
   align-items: center;
-  // 省份/城市各占50%
-  &.half-width {
-    flex: 1;
-    &:first-child {
-      margin-right: 20rpx; // 省份和城市之间的间距
-    }
-  }
   // 酒店名称/价格 独占一行
   &.full-width {
     flex: 1;
@@ -91,6 +91,18 @@
   color: #333;
   padding: 10rpx 0;
   border-bottom: 1rpx solid #eee;
+}
+
+/* RegionPicker 样式覆盖 */
+.region-picker-wrapper {
+  flex: 1;
+  padding: 10rpx 0;
+  border-bottom: 1rpx solid #eee;
+}
+
+.region-picker-content {
+  display: flex;
+  gap: 20rpx;
 }
 
 /* ========== 新增：价格单位样式 ========== */
@@ -160,7 +172,7 @@
   color: #ccc;
   cursor: pointer;
   &.active {
-    color: #FFD700; /* 金黄色 */
+    color: #ffd700; /* 金黄色 */
   }
 }
 
@@ -199,8 +211,8 @@
   cursor: pointer;
   transition: color 0.2s ease;
   &.active {
-    color: #FFD700 !important; /* 金黄色，强制高亮 */
-    text-shadow: 0 0 2rpx #FFC107; // 增加轻微阴影，更醒目
+    color: #ffd700 !important; /* 金黄色，强制高亮 */
+    text-shadow: 0 0 2rpx #ffc107; // 增加轻微阴影，更醒目
   }
 }
 
@@ -215,4 +227,76 @@
   &:hover {
     color: #0056b3;
   }
+}
+
+/* ========== 筛选触发行 ========== */
+.filter-trigger-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:active {
+    background-color: #f5f5f5;
+  }
+}
+
+.filter-display {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10rpx 0;
+}
+
+.filter-value {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.filter-arrow {
+  font-size: 40rpx;
+  color: #999;
+  font-weight: 300;
+}
+
+/* ========== 快捷标签 ========== */
+.quick-tags-section {
+  margin-top: 30rpx;
+  padding-top: 30rpx;
+  border-top: 1rpx solid #eee;
+  margin-bottom: 40rpx;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+
+.tag-item {
+  padding: 12rpx 24rpx;
+  background-color: #f5f5f5;
+  border-radius: 30rpx;
+  border: 1rpx solid #e0e0e0;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56rpx;
+
+  &.active {
+    background-color: #e6f0ff;
+    border-color: #007aff;
+
+    .tag-label {
+      color: #007aff;
+    }
+  }
+}
+
+.tag-label {
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1;
+  display: flex;
+  align-items: center;
 }

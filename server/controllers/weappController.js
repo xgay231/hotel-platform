@@ -245,7 +245,7 @@ const getWeappHotelDetail = async (req, res) => {
       publish_status: "已发布",
     })
       .select(
-        "hotel_id name_cn name_en star address open_time cover_image desc facilities tags"
+        "hotel_id name_cn name_en star address open_time cover_image images desc facilities tags"
       )
       .lean();
 

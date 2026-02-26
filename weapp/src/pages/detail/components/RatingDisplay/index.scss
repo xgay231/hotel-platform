@@ -1,0 +1,53 @@
+.rating-display {
+  padding: 20rpx;
+  background-color: #fff;
+  margin-bottom: 10rpx;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+
+  .rating-left {
+    display: flex;
+    align-items: baseline;
+
+    .rating-score {
+      font-size: 48rpx;
+      color: #ffc107;
+      font-weight: 600;
+    }
+
+    .rating-label {
+      font-size: 24rpx;
+      color: #999;
+      margin-left: 4rpx;
+    }
+  }
+
+  .rating-stars {
+    display: flex;
+    gap: 4rpx;
+
+    .star-icon {
+      font-size: 28rpx;
+
+      &.full {
+        color: #ffc107;
+      }
+
+      &.half {
+        color: #ffc107;
+        opacity: 0.5;
+      }
+
+      &.empty {
+        color: #e0e0e0;
+      }
+    }
+  }
+
+  .review-count {
+    font-size: 24rpx;
+    color: #666;
+    margin-left: auto;
+  }
+}

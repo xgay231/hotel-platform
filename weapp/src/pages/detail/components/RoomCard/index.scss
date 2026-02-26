@@ -1,0 +1,84 @@
+.room-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .room-left {
+    flex: 1;
+    padding-right: 20rpx;
+
+    .room-name {
+      font-size: 30rpx;
+      color: #333;
+      font-weight: 500;
+      display: block;
+      margin-bottom: 8rpx;
+    }
+
+    .room-desc {
+      font-size: 24rpx;
+      color: #999;
+      display: block;
+      margin-bottom: 10rpx;
+      line-height: 1.4;
+    }
+
+    .room-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10rpx;
+
+      .room-tag {
+        padding: 6rpx 12rpx;
+        background-color: #f0f8ff;
+        color: #409eff;
+        border-radius: 20rpx;
+        font-size: 22rpx;
+      }
+    }
+  }
+
+  .room-right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20rpx;
+
+    .price-wrap {
+      display: flex;
+      align-items: baseline;
+
+      .price-symbol {
+        font-size: 24rpx;
+        color: #e64340;
+      }
+
+      .price-value {
+        font-size: 36rpx;
+        color: #e64340;
+        font-weight: 600;
+      }
+
+      .price-unit {
+        font-size: 22rpx;
+        color: #999;
+      }
+    }
+
+    .book-btn {
+      background-color: #409eff;
+      color: #fff;
+      border: none;
+      padding: 8rpx 24rpx;
+      font-size: 24rpx;
+      border-radius: 24rpx;
+      line-height: 1.5;
+    }
+  }
+}

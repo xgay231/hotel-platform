@@ -58,3 +58,35 @@ GET {{baseUrl}}/api/weapp/hotels/3d552a4b-ce41-4131-bcb2-c1de7de79533
 # 11. 酒店详情（404 场景）
 #############################################
 GET {{baseUrl}}/api/weapp/hotels/not_exists_hotel_id
+
+#############################################
+# 12. 新增 Banner - 南京精品度假酒店 6
+#############################################
+POST {{baseUrl}}/api/hotels/banners
+Content-Type: application/json
+
+{
+  "id": "banner_weapp_nanjing_001",
+  "image_url": "http://localhost:4000/uploads/hotel-1772066858129-509687724.jpg",
+  "hotel_id": "3d552a4b-ce41-4131-bcb2-c1de7de79533"
+}
+
+#############################################
+# 14. 校验 Banner 顺序（前两位应为新建数据）
+#############################################
+# 预期：
+# data[0].id === banner_weapp_wuhan_001
+# data[1].id === banner_weapp_nanjing_001
+GET {{baseUrl}}/api/weapp/banners
+
+#############################################
+# 13. 新增 Banner - 武汉高端会议酒店 8
+#############################################
+POST {{baseUrl}}/api/hotels/banners
+Content-Type: application/json
+
+{
+  "id": "banner_weapp_wuhan_001",
+  "image_url": "http://localhost:4000/uploads/hotel-1772066838418-37782994.jpg",
+  "hotel_id": "0c1e83ae-3dea-4317-bb62-9b4c2ca91083"
+}

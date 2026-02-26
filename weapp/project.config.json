@@ -2,9 +2,9 @@
   "miniprogramRoot": "./dist",
   "projectname": "hotel-platform",
   "description": "hotel-platform made by wang and zhou",
-  "appid": "touristappid",
+  "appid": "wx86df8376e6f741e0",
   "setting": {
-    "urlCheck": true,
+    "urlCheck": false,
     "es6": false,
     "enhance": false,
     "compileHotReLoad": false,
