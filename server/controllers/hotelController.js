@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Hotel = require("../models/Hotel");
 const HotelRoom = require("../models/HotelRoom");
 const Banner = require("../models/Banner");
+const User = require("../models/User");
 
 /**
  * 获取酒店列表
@@ -31,10 +32,23 @@ const getHotels = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
+    // 获取所有商户 ID
+    const merchantIds = [...new Set(hotels.map((h) => h.merchant_id))];
+
+    // 批量查询商户信息
+    const merchants = await User.find({ userid: { $in: merchantIds } });
+    const merchantMap = new Map(merchants.map((m) => [m.userid, m.username]));
+
+    // 为每个酒店添加商户名称
+    const hotelsWithMerchant = hotels.map((hotel) => ({
+      ...hotel.toObject(),
+      merchant_name: merchantMap.get(hotel.merchant_id) || "",
+    }));
+
     res.json({
       success: true,
       data: {
-        list: hotels,
+        list: hotelsWithMerchant,
         total,
         page: parseInt(page),
         pageSize: limit,
@@ -624,6 +638,114 @@ const onlineHotel = async (req, res) => {
   }
 };
 
+/**
+ * 审核通过酒店
+ * @route PUT /api/hotels/:id/approve
+ * @desc 只有审核中的酒店可以审核通过
+ */
+const approveHotel = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log("[approveHotel] 审核通过酒店:", id);
+
+    // 查找酒店
+    const hotel = await Hotel.findOne({ hotel_id: id });
+    if (!hotel) {
+      return res.status(404).json({
+        success: false,
+        message: "酒店不存在",
+      });
+    }
+
+    // 检查审核状态
+    if (hotel.audit_status !== "审核中") {
+      return res.status(400).json({
+        success: false,
+        message: "只有审核中的酒店可以审核通过",
+      });
+    }
+
+    // 更新审核状态
+    hotel.audit_status = "通过";
+    hotel.audit_reason = undefined; // 清空不通过原因
+    await hotel.save();
+
+    console.log("[approveHotel] 酒店审核通过成功:", hotel);
+    res.json({
+      success: true,
+      message: "酒店审核通过",
+      data: hotel,
+    });
+  } catch (error) {
+    console.error("[approveHotel] 审核通过酒店失败:", error);
+    res.status(500).json({
+      success: false,
+      message: "审核通过酒店失败",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * 审核不通过酒店
+ * @route PUT /api/hotels/:id/reject
+ * @desc 只有审核中的酒店可以审核不通过，需填写原因
+ */
+const rejectHotel = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    console.log("[rejectHotel] 审核不通过酒店:", id);
+    console.log("[rejectHotel] 不通过原因:", reason);
+
+    // 验证原因是否填写
+    if (!reason || reason.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "请填写不通过原因",
+      });
+    }
+
+    // 查找酒店
+    const hotel = await Hotel.findOne({ hotel_id: id });
+    if (!hotel) {
+      return res.status(404).json({
+        success: false,
+        message: "酒店不存在",
+      });
+    }
+
+    // 检查审核状态
+    if (hotel.audit_status !== "审核中") {
+      return res.status(400).json({
+        success: false,
+        message: "只有审核中的酒店可以审核不通过",
+      });
+    }
+
+    // 更新审核状态
+    hotel.audit_status = "不通过";
+    hotel.audit_reason = reason.trim();
+    await hotel.save();
+
+    console.log("[rejectHotel] 酒店审核不通过成功:", hotel);
+    res.json({
+      success: true,
+      message: "酒店审核不通过",
+      data: hotel,
+    });
+  } catch (error) {
+    console.error("[rejectHotel] 审核不通过酒店失败:", error);
+    res.status(500).json({
+      success: false,
+      message: "审核不通过酒店失败",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getHotels,
   createHotel,
@@ -637,4 +759,6 @@ module.exports = {
   publishHotel,
   offlineHotel,
   onlineHotel,
+  approveHotel,
+  rejectHotel,
 };

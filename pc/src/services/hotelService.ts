@@ -173,7 +173,7 @@ const mapHotelFromBackend = (backendHotel: any): Hotel => {
     publishStatus: mapPublishStatus(backendHotel.publish_status),
     rejectReason: backendHotel.audit_reason,
     merchantId: backendHotel.merchant_id,
-    merchantName: "", // 后端暂无商户名称
+    merchantName: backendHotel.merchant_name || "",
     createdAt: backendHotel.createdAt,
     updatedAt: backendHotel.updatedAt,
   };
@@ -295,6 +295,70 @@ export const getMerchantHotels = async (
     };
   } catch (error) {
     console.error("获取酒店列表失败:", error);
+    throw error;
+  }
+};
+
+/**
+ * 获取全量酒店列表（管理员用）
+ * @param params 查询参数
+ * @returns 酒店列表响应
+ */
+export const getAllHotels = async (
+  params: Omit<HotelListParams, "merchantId">
+): Promise<HotelListResponse> => {
+  if (USE_MOCK) {
+    // Mock 模式
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const { page, pageSize } = params;
+    let filteredHotels = mockHotels;
+
+    // 按创建时间倒序排列
+    filteredHotels = [...filteredHotels].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    // 分页
+    const total = filteredHotels.length;
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const list = filteredHotels.slice(startIndex, endIndex);
+
+    return {
+      list,
+      total,
+      page,
+      pageSize,
+    };
+  }
+
+  // 真实 API 模式
+  try {
+    const response = await request.get<{
+      success: boolean;
+      data: {
+        list: any[];
+        total: number;
+        page: number;
+        pageSize: number;
+      };
+    }>("/hotels", {
+      params: {
+        page: params.page,
+        pageSize: params.pageSize,
+      },
+    });
+
+    return {
+      list: response.data.list.map(mapHotelFromBackend),
+      total: response.data.total,
+      page: response.data.page,
+      pageSize: response.data.pageSize,
+    };
+  } catch (error) {
+    console.error("获取全量酒店列表失败:", error);
     throw error;
   }
 };
@@ -700,6 +764,83 @@ export const onlineHotel = async (hotelId: string): Promise<Hotel> => {
     return mapHotelFromBackend(response.data);
   } catch (error) {
     console.error("上线酒店失败:", error);
+    throw error;
+  }
+};
+
+/**
+ * 审核通过酒店
+ * @param hotelId 酒店 ID
+ * @returns 更新后的酒店信息
+ */
+export const approveHotel = async (hotelId: string): Promise<Hotel> => {
+  if (USE_MOCK) {
+    // Mock 模式
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const hotel = mockHotels.find((h) => h.id === hotelId);
+    if (!hotel) {
+      throw new Error("酒店不存在");
+    }
+    if (hotel.auditStatus !== "pending") {
+      throw new Error("只有审核中的酒店可以审核通过");
+    }
+    hotel.auditStatus = "approved";
+    hotel.rejectReason = undefined;
+    return hotel;
+  }
+
+  // 真实 API 模式
+  try {
+    const response = await request.put<{
+      success: boolean;
+      data: any;
+    }>(`/hotels/${hotelId}/approve`);
+
+    return mapHotelFromBackend(response.data);
+  } catch (error) {
+    console.error("审核通过酒店失败:", error);
+    throw error;
+  }
+};
+
+/**
+ * 审核不通过酒店
+ * @param hotelId 酒店 ID
+ * @param reason 不通过原因
+ * @returns 更新后的酒店信息
+ */
+export const rejectHotel = async (
+  hotelId: string,
+  reason: string
+): Promise<Hotel> => {
+  if (USE_MOCK) {
+    // Mock 模式
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const hotel = mockHotels.find((h) => h.id === hotelId);
+    if (!hotel) {
+      throw new Error("酒店不存在");
+    }
+    if (hotel.auditStatus !== "pending") {
+      throw new Error("只有审核中的酒店可以审核不通过");
+    }
+    if (!reason || reason.trim() === "") {
+      throw new Error("请填写不通过原因");
+    }
+    hotel.auditStatus = "rejected";
+    hotel.rejectReason = reason.trim();
+    return hotel;
+  }
+
+  // 真实 API 模式
+  try {
+    const response = await request.put<{
+      success: boolean;
+      data: any;
+    }>(`/hotels/${hotelId}/reject`, { reason });
+
+    return mapHotelFromBackend(response.data);
+  } catch (error) {
+    console.error("审核不通过酒店失败:", error);
     throw error;
   }
 };

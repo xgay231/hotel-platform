@@ -13,6 +13,8 @@ const {
   publishHotel,
   offlineHotel,
   onlineHotel,
+  approveHotel,
+  rejectHotel,
 } = require("../controllers/hotelController");
 
 /**
@@ -98,5 +100,19 @@ router.put("/:id/offline", offlineHotel);
  * @access  Public
  */
 router.put("/:id/online", onlineHotel);
+
+/**
+ * @route   PUT /api/hotels/:id/approve
+ * @desc    审核通过酒店
+ * @access  Public
+ */
+router.put("/:id/approve", approveHotel);
+
+/**
+ * @route   PUT /api/hotels/:id/reject
+ * @desc    审核不通过酒店
+ * @access  Public
+ */
+router.put("/:id/reject", rejectHotel);
 
 module.exports = router;
