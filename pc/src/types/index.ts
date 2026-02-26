@@ -65,7 +65,6 @@ export type AuditStatus = (typeof AuditStatus)[keyof typeof AuditStatus];
 export const PublishStatus = {
   DRAFT: "draft", // 未发布
   PUBLISHED: "published", // 已发布
-  OFFLINE: "offline", // 已下线
 } as const;
 
 export type PublishStatus = (typeof PublishStatus)[keyof typeof PublishStatus];

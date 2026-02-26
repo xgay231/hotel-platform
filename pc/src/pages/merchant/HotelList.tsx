@@ -6,19 +6,16 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Table, Card, Button, Tag, Space, Empty, Tooltip, message } from "antd";
 import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
-import {
-  EyeOutlined,
-  EditOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-} from "@ant-design/icons";
+import { EditOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import type { Hotel } from "../../types";
 import { AuditStatus, PublishStatus } from "../../types";
 import { getMerchantHotels } from "../../services/hotelService";
 import useUserStore from "../../store/userStore";
+import HotelCreateModal from "../../components/HotelCreateModal";
+import HotelEditModal from "../../components/HotelEditModal";
 
 // 分页配置
-const DEFAULT_PAGE_SIZE = 15;
+const DEFAULT_PAGE_SIZE = 10;
 
 /**
  * 审核状态标签渲染
@@ -59,7 +56,6 @@ const PublishStatusTag: React.FC<{ status: Hotel["publishStatus"] }> = ({
   > = {
     draft: { color: "default", text: "未发布" },
     published: { color: "blue", text: "已发布" },
-    offline: { color: "warning", text: "已下线" },
   };
 
   const { color, text } = config[status] || { color: "default", text: status };
@@ -86,6 +82,9 @@ const HotelList: React.FC = () => {
     pageSize: DEFAULT_PAGE_SIZE,
     total: 0,
   });
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedHotelId, setSelectedHotelId] = useState<string | null>(null);
 
   // 获取当前用户信息
   const { user } = useUserStore();
@@ -139,19 +138,37 @@ const HotelList: React.FC = () => {
   };
 
   /**
-   * 查看酒店详情
-   */
-  const handleView = (record: Hotel) => {
-    message.info(`查看酒店：${record.name}`);
-    // TODO: 跳转到详情页或打开详情弹窗
-  };
-
-  /**
    * 编辑酒店
    */
   const handleEdit = (record: Hotel) => {
-    message.info(`编辑酒店：${record.name}`);
-    // TODO: 跳转到编辑页或打开编辑弹窗
+    setSelectedHotelId(record.id);
+    setEditModalOpen(true);
+  };
+
+  /**
+   * 编辑酒店成功回调
+   */
+  const handleEditSuccess = () => {
+    setEditModalOpen(false);
+    setSelectedHotelId(null);
+    // 刷新列表
+    fetchHotels(pagination.current, pagination.pageSize);
+  };
+
+  /**
+   * 打开新建酒店弹窗
+   */
+  const handleCreate = () => {
+    setCreateModalOpen(true);
+  };
+
+  /**
+   * 新建酒店成功回调
+   */
+  const handleCreateSuccess = () => {
+    setCreateModalOpen(false);
+    // 刷新列表
+    fetchHotels(pagination.current, pagination.pageSize);
   };
 
   // 表格列定义
@@ -219,27 +236,17 @@ const HotelList: React.FC = () => {
     {
       title: "操作",
       key: "action",
-      width: 150,
+      width: 100,
       fixed: "right",
       render: (_: unknown, record: Hotel) => (
-        <Space size="small">
-          <Button
-            type="link"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => handleView(record)}
-          >
-            查看
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          >
-            编辑
-          </Button>
-        </Space>
+        <Button
+          type="link"
+          size="small"
+          icon={<EditOutlined />}
+          onClick={() => handleEdit(record)}
+        >
+          编辑
+        </Button>
       ),
     },
   ];
@@ -257,7 +264,11 @@ const HotelList: React.FC = () => {
             >
               刷新
             </Button>
-            <Button type="primary" icon={<PlusOutlined />}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleCreate}
+            >
               新建酒店
             </Button>
           </Space>
@@ -275,7 +286,7 @@ const HotelList: React.FC = () => {
             showSizeChanger: false,
             showQuickJumper: true,
             showTotal: (total) => `共 ${total} 条记录`,
-            pageSizeOptions: ["15"],
+            pageSizeOptions: ["10"],
           }}
           onChange={handleTableChange}
           scroll={{ x: 1200 }}
@@ -285,7 +296,11 @@ const HotelList: React.FC = () => {
                 description="暂无酒店数据"
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               >
-                <Button type="primary" icon={<PlusOutlined />}>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleCreate}
+                >
                   新建酒店
                 </Button>
               </Empty>
@@ -293,6 +308,24 @@ const HotelList: React.FC = () => {
           }}
         />
       </Card>
+
+      {/* 新建酒店弹窗 */}
+      <HotelCreateModal
+        open={createModalOpen}
+        onCancel={() => setCreateModalOpen(false)}
+        onSuccess={handleCreateSuccess}
+      />
+
+      {/* 编辑酒店弹窗 */}
+      <HotelEditModal
+        hotelId={selectedHotelId}
+        open={editModalOpen}
+        onCancel={() => {
+          setEditModalOpen(false);
+          setSelectedHotelId(null);
+        }}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   );
 };

@@ -5,7 +5,7 @@
  */
 
 import React, { useMemo } from "react";
-import { Layout, Menu, Avatar, Dropdown } from "antd";
+import { Layout, Menu, Button, Popconfirm, Avatar, Dropdown } from "antd";
 import {
   ShopOutlined,
   EditOutlined,
@@ -27,11 +27,6 @@ const merchantMenuItems: MenuProps["items"] = [
     key: "/merchant/hotel/list",
     icon: <ShopOutlined />,
     label: "酒店列表",
-  },
-  {
-    key: "/merchant/hotel/edit",
-    icon: <EditOutlined />,
-    label: "新建酒店",
   },
 ];
 
@@ -86,11 +81,16 @@ const DashboardLayout: React.FC = () => {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      {/* 左侧导航栏 */}
+      {/* 左侧导航栏 - 固定定位 */}
       <Sider
         width={240}
         style={{
           background: "#001529",
+          position: "fixed",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          zIndex: 10,
         }}
       >
         <div
@@ -130,6 +130,10 @@ const DashboardLayout: React.FC = () => {
             style={{
               padding: "16px",
               borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+              position: "sticky",
+              bottom: 0,
+              background: "#001529",
+              zIndex: 1,
             }}
           >
             <Dropdown
@@ -176,7 +180,7 @@ const DashboardLayout: React.FC = () => {
       </Sider>
 
       {/* 右侧内容区 */}
-      <Layout>
+      <Layout style={{ marginLeft: 240 }}>
         <Content
           style={{
             margin: 24,

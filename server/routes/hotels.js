@@ -4,6 +4,7 @@ const {
   getHotels,
   createHotel,
   getHotelById,
+  updateHotel,
   createRoom,
   getBanners,
   createBanner,
@@ -29,6 +30,13 @@ router.get("/", getHotels);
  * @access  Public
  */
 router.get("/:id", getHotelById);
+
+/**
+ * @route   PUT /api/hotels/:id
+ * @desc    更新酒店
+ * @access  Public
+ */
+router.put("/:id", updateHotel);
 
 /**
  * @route   POST /api/hotels/:id/rooms
