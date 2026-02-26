@@ -5,13 +5,39 @@ const Banner = require("../models/Banner");
 /**
  * 获取酒店列表
  * @route GET /api/hotels
+ * @query page - 页码，默认 1
+ * @query pageSize - 每页数量，默认 15
+ * @query merchant_id - 商户 ID（可选）
  */
 const getHotels = async (req, res) => {
   try {
-    const hotels = await Hotel.find().sort({ createdAt: -1 });
+    const { page = 1, pageSize = 15, merchant_id } = req.query;
+    const skip = (page - 1) * pageSize;
+    const limit = parseInt(pageSize);
+
+    // 构建查询条件
+    const query = {};
+    if (merchant_id) {
+      query.merchant_id = merchant_id;
+    }
+
+    // 查询总数
+    const total = await Hotel.countDocuments(query);
+
+    // 分页查询
+    const hotels = await Hotel.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
     res.json({
       success: true,
-      data: hotels,
+      data: {
+        list: hotels,
+        total,
+        page: parseInt(page),
+        pageSize: limit,
+      },
     });
   } catch (error) {
     res.status(500).json({

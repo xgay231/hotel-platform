@@ -86,27 +86,18 @@ export default api;
 
 // 导出请求方法封装
 export const request = {
-  get: <T = any>(url: string, config?: InternalAxiosRequestConfig) =>
+  get: <T = any>(url: string, config?: any) =>
     api.get<T>(url, config).then((res) => res.data),
 
-  post: <T = any>(
-    url: string,
-    data?: any,
-    config?: InternalAxiosRequestConfig
-  ) => api.post<T>(url, data, config).then((res) => res.data),
+  post: <T = any>(url: string, data?: any, config?: any) =>
+    api.post<T>(url, data, config).then((res) => res.data),
 
-  put: <T = any>(
-    url: string,
-    data?: any,
-    config?: InternalAxiosRequestConfig
-  ) => api.put<T>(url, data, config).then((res) => res.data),
+  put: <T = any>(url: string, data?: any, config?: any) =>
+    api.put<T>(url, data, config).then((res) => res.data),
 
-  delete: <T = any>(url: string, config?: InternalAxiosRequestConfig) =>
+  delete: <T = any>(url: string, config?: any) =>
     api.delete<T>(url, config).then((res) => res.data),
 
-  patch: <T = any>(
-    url: string,
-    data?: any,
-    config?: InternalAxiosRequestConfig
-  ) => api.patch<T>(url, data, config).then((res) => res.data),
+  patch: <T = any>(url: string, data?: any, config?: any) =>
+    api.patch<T>(url, data, config).then((res) => res.data),
 };
