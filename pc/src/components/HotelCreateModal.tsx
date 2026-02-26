@@ -4,16 +4,7 @@
  */
 
 import React, { useState } from "react";
-import {
-  Modal,
-  Form,
-  Input,
-  Select,
-  message,
-  Space,
-  Upload,
-  Divider,
-} from "antd";
+import { App, Modal, Form, Input, Select, Space, Upload, Divider } from "antd";
 import type { Hotel, HotelStar } from "../types";
 import { createHotel, uploadHotelImage } from "../services/hotelService";
 import useUserStore from "../store/userStore";
@@ -77,6 +68,13 @@ const HotelCreateModal: React.FC<HotelCreateModalProps> = ({
 
   // 获取当前用户信息
   const { user } = useUserStore();
+  const { message } = App.useApp();
+
+  /** 从上传文件列表中提取 URL 数组 */
+  const getImageUrls = (fileList: UploadFile[]): string[] =>
+    fileList
+      .map((file) => file.url)
+      .filter((url): url is string => typeof url === "string" && !!url);
 
   /**
    * 省份变化处理
@@ -115,8 +113,8 @@ const HotelCreateModal: React.FC<HotelCreateModalProps> = ({
         minPrice: values.minPrice || 0,
         openTime: values.openTime || "",
         // 图片相关
-        coverImage: values.coverImage || "",
-        images: values.images || [],
+        coverImage: getImageUrls(coverImageFileList)[0] || "",
+        images: getImageUrls(imagesFileList),
         // 描述与标签
         description: values.description || "",
         tags: values.tags || [],
@@ -179,7 +177,13 @@ const HotelCreateModal: React.FC<HotelCreateModalProps> = ({
     try {
       const url = await uploadHotelImage(file as File);
       onSuccess?.(url);
-      form.setFieldValue("coverImage", url);
+      const newFile: UploadFile = {
+        uid: (file as any).uid || `-${Date.now()}`,
+        name: (file as any).name || "cover.jpg",
+        status: "done",
+        url,
+      };
+      setCoverImageFileList([newFile]);
       message.success("封面图片上传成功");
     } catch (error) {
       onError?.(error as Error);
@@ -195,9 +199,13 @@ const HotelCreateModal: React.FC<HotelCreateModalProps> = ({
     try {
       const url = await uploadHotelImage(file as File);
       onSuccess?.(url);
-      // 更新表单值
-      const currentImages = form.getFieldValue("images") || [];
-      form.setFieldValue("images", [...currentImages, url]);
+      const newFile: UploadFile = {
+        uid: (file as any).uid || `-${Date.now()}`,
+        name: (file as any).name || "image.jpg",
+        status: "done",
+        url,
+      };
+      setImagesFileList((prev) => [...prev, newFile]);
       message.success("图片上传成功");
     } catch (error) {
       onError?.(error as Error);
@@ -209,7 +217,6 @@ const HotelCreateModal: React.FC<HotelCreateModalProps> = ({
    * 封面图片移除处理
    */
   const handleCoverImageRemove = () => {
-    form.setFieldValue("coverImage", "");
     setCoverImageFileList([]);
   };
 
@@ -217,10 +224,7 @@ const HotelCreateModal: React.FC<HotelCreateModalProps> = ({
    * 多图移除处理
    */
   const handleImagesRemove = (file: UploadFile) => {
-    const currentImages = form.getFieldValue("images") || [];
-    const newImages = currentImages.filter((url: string) => url !== file.url);
-    form.setFieldValue("images", newImages);
-    setImagesFileList(imagesFileList.filter((f) => f.uid !== file.uid));
+    setImagesFileList((prev) => prev.filter((f) => f.uid !== file.uid));
   };
 
   return (
@@ -373,7 +377,7 @@ const HotelCreateModal: React.FC<HotelCreateModalProps> = ({
           <span style={{ fontSize: 16, fontWeight: 500 }}>图片管理</span>
         </div>
 
-        <Form.Item label="封面图片" name="coverImage">
+        <Form.Item label="封面图片">
           <Upload
             listType="picture-card"
             fileList={coverImageFileList}
@@ -390,7 +394,7 @@ const HotelCreateModal: React.FC<HotelCreateModalProps> = ({
           </Upload>
         </Form.Item>
 
-        <Form.Item label="酒店图片" name="images">
+        <Form.Item label="酒店图片">
           <Upload
             listType="picture-card"
             fileList={imagesFileList}

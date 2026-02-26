@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import {
+  App,
   Table,
   Card,
   Button,
@@ -12,7 +13,6 @@ import {
   Space,
   Empty,
   Tooltip,
-  message,
   Modal,
   Input,
 } from "antd";
@@ -28,12 +28,11 @@ import {
 import type { Hotel } from "../../types";
 import {
   getAllHotels,
-  approveHotel,
-  rejectHotel,
   publishHotel,
   offlineHotel,
   onlineHotel,
 } from "../../services/hotelService";
+import { approveHotel, rejectHotel } from "../../services/auditService";
 import HotelDetailModal from "../../components/HotelDetailModal";
 
 // 分页配置
@@ -115,6 +114,8 @@ const AuditList: React.FC = () => {
   // 详情弹窗状态
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedHotelId, setSelectedHotelId] = useState<string | null>(null);
+
+  const { message } = App.useApp();
 
   /**
    * 加载酒店列表

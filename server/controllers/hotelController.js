@@ -84,7 +84,7 @@ const createHotel = async (req, res) => {
       min_price,
       province,
       city,
-      image_url,
+      images,
       tags,
     } = req.body;
 
@@ -101,7 +101,7 @@ const createHotel = async (req, res) => {
       min_price,
       province,
       city,
-      image_url,
+      images,
       tags,
     });
 
@@ -134,7 +134,7 @@ const createHotel = async (req, res) => {
       min_price,
       province,
       city,
-      image_url,
+      images: Array.isArray(images) ? images : [],
       tags,
       // audit_status 默认为 '审核中'
       // publish_status 默认为 '未发布'
@@ -216,7 +216,7 @@ const updateHotel = async (req, res) => {
       min_price,
       province,
       city,
-      image_url,
+      images,
       tags,
     } = req.body;
 
@@ -243,14 +243,11 @@ const updateHotel = async (req, res) => {
     if (min_price !== undefined) hotel.min_price = min_price;
     if (province !== undefined) hotel.province = province;
     if (city !== undefined) hotel.city = city;
-    if (image_url !== undefined) hotel.image_url = image_url;
+    if (images !== undefined)
+      hotel.images = Array.isArray(images) ? images : [];
     if (tags !== undefined) hotel.tags = tags;
 
-    // 酒店信息修改后，重置审核状态为"审核中"，发布状态为"未发布"
-    hotel.audit_status = "审核中";
-    hotel.audit_reason = undefined;
-    hotel.publish_status = "未发布";
-
+    // 编辑后保持原有的审核状态和发布状态，不再重置
     await hotel.save();
 
     console.log("[updateHotel] 酒店更新成功:", hotel);
@@ -276,7 +273,7 @@ const updateHotel = async (req, res) => {
 const createRoom = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, price, desc, tags } = req.body;
+    const { name, price, desc, image, tags } = req.body;
 
     console.log("[createRoom] 请求体:", req.body);
 
@@ -300,6 +297,7 @@ const createRoom = async (req, res) => {
       name,
       price,
       desc,
+      image: image || "",
       tags,
     });
 
@@ -393,7 +391,7 @@ const updateRoom = async (req, res) => {
   try {
     const { id } = req.params;
     const { roomId } = req.params;
-    const { name, price, desc, tags } = req.body;
+    const { name, price, desc, image, tags } = req.body;
 
     console.log("[updateRoom] 更新房型:", { hotelId: id, roomId });
     console.log("[updateRoom] 更新数据:", req.body);
@@ -420,6 +418,7 @@ const updateRoom = async (req, res) => {
     if (name !== undefined) room.name = name;
     if (price !== undefined) room.price = price;
     if (desc !== undefined) room.desc = desc;
+    if (image !== undefined) room.image = image;
     if (tags !== undefined) room.tags = tags;
 
     await room.save();

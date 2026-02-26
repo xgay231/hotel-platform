@@ -107,7 +107,7 @@ const HotelDetailModal: React.FC<HotelDetailModalProps> = ({
       onCancel={onCancel}
       footer={null}
       width={800}
-      destroyOnClose
+      destroyOnHidden
     >
       <Spin spinning={loading}>
         {hotel ? (

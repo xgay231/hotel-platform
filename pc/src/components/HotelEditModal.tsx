@@ -5,11 +5,11 @@
 
 import React, { useState, useEffect } from "react";
 import {
+  App,
   Modal,
   Form,
   Input,
   Select,
-  message,
   Space,
   Button,
   Card,
@@ -17,16 +17,14 @@ import {
   Empty,
   Divider,
   Upload,
-  Image,
 } from "antd";
 import type { Hotel, HotelStar, RoomType } from "../types";
 import {
   getHotelWithRooms,
   updateHotel,
-  deleteRoom,
   uploadHotelImage,
-  uploadHotelImages,
 } from "../services/hotelService";
+import { deleteRoom } from "../services/roomService";
 import RoomTypeFormModal from "./RoomTypeFormModal";
 import type { UploadFile, UploadProps } from "antd/es/upload/interface";
 
@@ -87,12 +85,19 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
     []
   );
   const [imagesFileList, setImagesFileList] = useState<UploadFile[]>([]);
-  const [uploading, setUploading] = useState(false);
 
   // 房型相关状态
   const [rooms, setRooms] = useState<RoomType[]>([]);
   const [roomFormOpen, setRoomFormOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<RoomType | undefined>();
+
+  const { message } = App.useApp();
+
+  /** 从上传文件列表中提取 URL 数组 */
+  const getImageUrls = (fileList: UploadFile[]): string[] =>
+    fileList
+      .map((file) => file.url)
+      .filter((url): url is string => typeof url === "string" && !!url);
 
   /**
    * 获取酒店详情并回填表单
@@ -142,6 +147,8 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
             url: hotel.coverImage,
           },
         ]);
+      } else {
+        setCoverImageFileList([]);
       }
       if (hotel.images && hotel.images.length > 0) {
         setImagesFileList(
@@ -152,6 +159,8 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
             url,
           }))
         );
+      } else {
+        setImagesFileList([]);
       }
 
       // 设置房型列表
@@ -208,8 +217,8 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
         openTime: values.openTime || "",
         description: values.description || "",
         tags: values.tags || [],
-        coverImage: values.coverImage || "",
-        images: values.images || [],
+        coverImage: getImageUrls(coverImageFileList)[0] || "",
+        images: getImageUrls(imagesFileList),
       };
       console.log("[HotelEditModal] 更新数据:", updateData);
 
@@ -308,7 +317,13 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
     try {
       const url = await uploadHotelImage(file as File);
       onSuccess?.(url);
-      form.setFieldValue("coverImage", url);
+      const newFile: UploadFile = {
+        uid: (file as any).uid || `-${Date.now()}`,
+        name: (file as any).name || "cover.jpg",
+        status: "done",
+        url,
+      };
+      setCoverImageFileList([newFile]);
       message.success("封面图片上传成功");
     } catch (error) {
       onError?.(error as Error);
@@ -324,9 +339,13 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
     try {
       const url = await uploadHotelImage(file as File);
       onSuccess?.(url);
-      // 更新表单值
-      const currentImages = form.getFieldValue("images") || [];
-      form.setFieldValue("images", [...currentImages, url]);
+      const newFile: UploadFile = {
+        uid: (file as any).uid || `-${Date.now()}`,
+        name: (file as any).name || "image.jpg",
+        status: "done",
+        url,
+      };
+      setImagesFileList((prev) => [...prev, newFile]);
       message.success("图片上传成功");
     } catch (error) {
       onError?.(error as Error);
@@ -338,7 +357,6 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
    * 封面图片移除处理
    */
   const handleCoverImageRemove = () => {
-    form.setFieldValue("coverImage", "");
     setCoverImageFileList([]);
   };
 
@@ -346,10 +364,7 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
    * 多图移除处理
    */
   const handleImagesRemove = (file: UploadFile) => {
-    const currentImages = form.getFieldValue("images") || [];
-    const newImages = currentImages.filter((url: string) => url !== file.url);
-    form.setFieldValue("images", newImages);
-    setImagesFileList(imagesFileList.filter((f) => f.uid !== file.uid));
+    setImagesFileList((prev) => prev.filter((f) => f.uid !== file.uid));
   };
 
   return (
@@ -496,7 +511,7 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
             <span style={{ fontSize: 16, fontWeight: 500 }}>图片管理</span>
           </div>
 
-          <Form.Item label="封面图片" name="coverImage">
+          <Form.Item label="封面图片">
             <Upload
               listType="picture-card"
               fileList={coverImageFileList}
@@ -513,7 +528,7 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
             </Upload>
           </Form.Item>
 
-          <Form.Item label="酒店图片" name="images">
+          <Form.Item label="酒店图片">
             <Upload
               listType="picture-card"
               fileList={imagesFileList}
@@ -560,7 +575,7 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
                     key={room.roomId}
                     size="small"
                     style={{ marginBottom: 8 }}
-                    bodyStyle={{ padding: "12px 16px" }}
+                    styles={{ body: { padding: "12px 16px" } }}
                   >
                     <div
                       style={{

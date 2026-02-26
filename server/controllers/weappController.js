@@ -31,6 +31,39 @@ const toNumber = (value) => {
   return Number.isFinite(n) ? n : NaN;
 };
 
+const escapeRegex = (value = "") =>
+  String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const buildRegionRegex = (value, suffixes = []) => {
+  const keyword = String(value || "").trim();
+  if (!keyword) return null;
+
+  const escaped = escapeRegex(keyword);
+  const escapedSuffixes = suffixes.map((item) => escapeRegex(item));
+
+  // 构建正则：匹配 keyword 或 keyword + 后缀
+  // 例如：keyword="南京", suffixes=["市"] => 匹配 "南京" 或 "南京市"
+  // 例如：keyword="南京市", suffixes=["市"] => 匹配 "南京" 或 "南京市"
+  const suffixPart = escapedSuffixes.length
+    ? `(?:${escapedSuffixes.join("|")})?`
+    : "";
+
+  // 如果 keyword 已经包含后缀，需要同时匹配带后缀和不带后缀的情况
+  // 例如：keyword="南京市" => 匹配 "南京" 或 "南京市"
+  let baseKeyword = escaped;
+  for (const suffix of suffixes) {
+    if (keyword.endsWith(suffix)) {
+      baseKeyword = escapeRegex(keyword.slice(0, -suffix.length));
+      break;
+    }
+  }
+
+  // 构建正则：匹配 baseKeyword 或 baseKeyword + 后缀
+  const regexPattern = `^(?:${baseKeyword}|${escaped}${suffixPart})$`;
+
+  return new RegExp(regexPattern, "i");
+};
+
 const getWeappBanners = async (req, res) => {
   try {
     const banners = await Banner.find({})
@@ -85,11 +118,19 @@ const getWeappHotels = async (req, res) => {
     };
 
     if (province) {
-      query.province = province;
+      query.province = buildRegionRegex(province, [
+        "省",
+        "市",
+        "壮族自治区",
+        "回族自治区",
+        "维吾尔自治区",
+        "自治区",
+        "特别行政区",
+      ]);
     }
 
     if (city) {
-      query.city = city;
+      query.city = buildRegionRegex(city, ["市", "地区", "盟", "州"]);
     }
 
     if (keyword) {

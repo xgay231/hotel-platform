@@ -214,6 +214,7 @@ export interface RoomType {
   name: string; // 房型名称
   price: number; // 价格
   desc: string; // 描述
+  image?: string; // 房型图片
   tags: string[]; // 标签
   createdAt?: string;
   updatedAt?: string;
@@ -224,6 +225,7 @@ export interface CreateRoomRequest {
   name: string;
   price: number;
   desc: string;
+  image?: string;
   tags?: string[];
 }
 
@@ -232,6 +234,7 @@ export interface UpdateRoomRequest {
   name?: string;
   price?: number;
   desc?: string;
+  image?: string;
   tags?: string[];
 }
 

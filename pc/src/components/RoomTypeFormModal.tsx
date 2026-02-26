@@ -4,9 +4,11 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, InputNumber, message } from "antd";
+import { App, Modal, Form, Input, InputNumber, Upload } from "antd";
 import type { RoomType, CreateRoomRequest, UpdateRoomRequest } from "../types";
-import { createRoom, updateRoom } from "../services/hotelService";
+import { createRoom, updateRoom } from "../services/roomService";
+import { uploadHotelImage } from "../services/hotelService";
+import type { UploadFile, UploadProps } from "antd/es/upload/interface";
 
 const { TextArea } = Input;
 
@@ -51,8 +53,10 @@ const RoomTypeFormModal: React.FC<RoomTypeFormModalProps> = ({
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [tagInput, setTagInput] = useState("");
+  const [imageFileList, setImageFileList] = useState<UploadFile[]>([]);
 
   const isEdit = !!room;
+  const { message } = App.useApp();
 
   /**
    * 弹窗打开时回填表单
@@ -63,13 +67,26 @@ const RoomTypeFormModal: React.FC<RoomTypeFormModalProps> = ({
         name: room.name,
         price: room.price,
         desc: room.desc,
+        image: room.image || "",
         tags: room.tags || [],
       });
+      // 回填图片
+      if (room.image) {
+        setImageFileList([
+          {
+            uid: "-1",
+            name: "room-image.jpg",
+            status: "done",
+            url: room.image,
+          },
+        ]);
+      }
     } else if (open) {
       // 新增模式
       form.setFieldsValue({
         tags: [],
       });
+      setImageFileList([]);
     }
   }, [open, room, form]);
 
@@ -129,6 +146,7 @@ const RoomTypeFormModal: React.FC<RoomTypeFormModalProps> = ({
           name: values.name,
           price: values.price,
           desc: values.desc,
+          image: values.image || "",
           tags: values.tags,
         };
         await updateRoom(hotelId, room.roomId, updateData);
@@ -139,6 +157,7 @@ const RoomTypeFormModal: React.FC<RoomTypeFormModalProps> = ({
           name: values.name,
           price: values.price,
           desc: values.desc,
+          image: values.image || "",
           tags: values.tags,
         };
         await createRoom(hotelId, createData);
@@ -167,7 +186,40 @@ const RoomTypeFormModal: React.FC<RoomTypeFormModalProps> = ({
   const handleCancel = () => {
     form.resetFields();
     setTagInput("");
+    setImageFileList([]);
     onCancel();
+  };
+
+  /**
+   * 图片上传处理
+   */
+  const handleImageUpload: UploadProps["customRequest"] = async (options) => {
+    const { file, onSuccess, onError } = options;
+    try {
+      const url = await uploadHotelImage(file as File);
+      onSuccess?.(url);
+      form.setFieldValue("image", url);
+      // 更新文件列表
+      const newFile: UploadFile = {
+        uid: (file as any).uid || `-${Date.now()}`,
+        name: (file as any).name || "room-image.jpg",
+        status: "done",
+        url,
+      };
+      setImageFileList([newFile]);
+      message.success("图片上传成功");
+    } catch (error) {
+      onError?.(error as Error);
+      message.error("图片上传失败");
+    }
+  };
+
+  /**
+   * 图片移除处理
+   */
+  const handleImageRemove = () => {
+    form.setFieldValue("image", "");
+    setImageFileList([]);
   };
 
   return (
@@ -234,6 +286,23 @@ const RoomTypeFormModal: React.FC<RoomTypeFormModalProps> = ({
             maxLength={500}
             showCount
           />
+        </Form.Item>
+
+        <Form.Item label="房型图片" name="image">
+          <Upload
+            listType="picture-card"
+            fileList={imageFileList}
+            customRequest={handleImageUpload}
+            onRemove={handleImageRemove}
+            maxCount={1}
+            accept="image/*"
+          >
+            {imageFileList.length === 0 && (
+              <div>
+                <div style={{ marginTop: 8 }}>上传图片</div>
+              </div>
+            )}
+          </Upload>
         </Form.Item>
 
         <Form.Item label="房型标签" name="tags">

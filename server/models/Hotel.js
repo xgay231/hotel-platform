@@ -66,11 +66,10 @@ const hotelSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    image_url: {
-      type: String,
+    images: {
+      type: [String],
       required: false,
-      trim: true,
-      default: "",
+      default: [],
     },
     audit_status: {
       type: String,

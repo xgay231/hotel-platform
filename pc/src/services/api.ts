@@ -5,7 +5,7 @@
 
 import axios, { AxiosError } from "axios";
 import type { InternalAxiosRequestConfig, AxiosResponse } from "axios";
-import { message } from "antd";
+import { notifyError } from "./notify";
 
 // API 基础配置
 const API_BASE_URL =
@@ -16,9 +16,10 @@ const API_TIMEOUT = 10000;
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: API_TIMEOUT,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  // 不全局设置 Content-Type，避免影响 FormData 上传
+  // headers: {
+  //   "Content-Type": "application/json",
+  // },
 });
 
 // 请求拦截器 - 添加 token
@@ -54,27 +55,27 @@ api.interceptors.response.use(
           // token 过期或无效，清除本地存储并跳转到登录页
           localStorage.removeItem("token");
           localStorage.removeItem("user");
-          message.error("登录已过期，请重新登录");
+          notifyError("登录已过期，请重新登录");
           window.location.href = "/login";
           break;
         case 403:
-          message.error("没有权限访问该资源");
+          notifyError("没有权限访问该资源");
           break;
         case 404:
-          message.error("请求的资源不存在");
+          notifyError("请求的资源不存在");
           break;
         case 500:
-          message.error(data?.message || "服务器错误，请稍后重试");
+          notifyError(data?.message || "服务器错误，请稍后重试");
           break;
         default:
-          message.error(data?.message || `请求失败 (${status})`);
+          notifyError(data?.message || `请求失败 (${status})`);
       }
     } else if (request) {
       // 请求已发出但没有收到响应
-      message.error("网络错误，请检查网络连接");
+      notifyError("网络错误，请检查网络连接");
     } else {
       // 请求配置出错
-      message.error(errorMessage || "请求配置错误");
+      notifyError(errorMessage || "请求配置错误");
     }
 
     return Promise.reject(error);

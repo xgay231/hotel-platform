@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Table, Card, Button, Tag, Space, Empty, Tooltip, message } from "antd";
+import { App, Table, Card, Button, Tag, Space, Empty, Tooltip } from "antd";
 import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import {
   EditOutlined,
@@ -102,6 +102,7 @@ const HotelList: React.FC = () => {
 
   // 获取当前用户信息
   const { user } = useUserStore();
+  const { message } = App.useApp();
 
   /**
    * 加载酒店列表
