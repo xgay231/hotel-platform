@@ -495,6 +495,10 @@ export const updateHotel = async (
     mockHotels[index] = {
       ...mockHotels[index],
       ...data,
+      // 酒店信息修改后，重置审核状态为"审核中"，发布状态为"未发布"
+      auditStatus: "pending",
+      rejectReason: undefined,
+      publishStatus: "draft",
       updatedAt: new Date().toISOString(),
     };
 
@@ -781,8 +785,9 @@ export const approveHotel = async (hotelId: string): Promise<Hotel> => {
     if (!hotel) {
       throw new Error("酒店不存在");
     }
-    if (hotel.auditStatus !== "pending") {
-      throw new Error("只有审核中的酒店可以审核通过");
+    // 允许审核中或不通过的酒店进行审核通过
+    if (hotel.auditStatus !== "pending" && hotel.auditStatus !== "rejected") {
+      throw new Error("只有审核中或不通过的酒店可以审核通过");
     }
     hotel.auditStatus = "approved";
     hotel.rejectReason = undefined;
@@ -820,14 +825,22 @@ export const rejectHotel = async (
     if (!hotel) {
       throw new Error("酒店不存在");
     }
-    if (hotel.auditStatus !== "pending") {
-      throw new Error("只有审核中的酒店可以审核不通过");
+    // 允许审核中或已通过的酒店进行不通过操作
+    if (hotel.auditStatus !== "pending" && hotel.auditStatus !== "approved") {
+      throw new Error("只有审核中或已通过的酒店可以审核不通过");
     }
     if (!reason || reason.trim() === "") {
       throw new Error("请填写不通过原因");
     }
     hotel.auditStatus = "rejected";
     hotel.rejectReason = reason.trim();
+    // 如果酒店之前已发布，需要将发布状态重置为未发布
+    if (
+      hotel.publishStatus === "published" ||
+      hotel.publishStatus === "offline"
+    ) {
+      hotel.publishStatus = "draft";
+    }
     return hotel;
   }
 

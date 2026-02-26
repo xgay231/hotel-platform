@@ -34,6 +34,7 @@ import {
   offlineHotel,
   onlineHotel,
 } from "../../services/hotelService";
+import HotelDetailModal from "../../components/HotelDetailModal";
 
 // 分页配置
 const DEFAULT_PAGE_SIZE = 10;
@@ -110,6 +111,10 @@ const AuditList: React.FC = () => {
   const [rejectReason, setRejectReason] = useState("");
   const [currentHotel, setCurrentHotel] = useState<Hotel | null>(null);
   const [auditLoading, setAuditLoading] = useState(false);
+
+  // 详情弹窗状态
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedHotelId, setSelectedHotelId] = useState<string | null>(null);
 
   /**
    * 加载酒店列表
@@ -276,9 +281,17 @@ const AuditList: React.FC = () => {
       key: "name",
       width: 200,
       ellipsis: true,
-      render: (text: string) => (
-        <Tooltip title={text}>
-          <span>{text}</span>
+      render: (text: string, record: Hotel) => (
+        <Tooltip title="点击查看详情">
+          <span
+            style={{ color: "#1890ff", cursor: "pointer" }}
+            onClick={() => {
+              setSelectedHotelId(record.id);
+              setDetailModalOpen(true);
+            }}
+          >
+            {text}
+          </span>
         </Tooltip>
       ),
     },
@@ -377,58 +390,80 @@ const AuditList: React.FC = () => {
           );
         }
 
-        // 审核通过：根据发布状态显示不同按钮
+        // 审核通过：根据发布状态显示不同按钮，同时显示不通过按钮
         if (record.auditStatus === "approved") {
-          // 未发布：显示发布按钮
-          if (record.publishStatus === "draft") {
-            return (
+          return (
+            <Space size="small">
+              {/* 未发布：显示发布按钮 */}
+              {record.publishStatus === "draft" && (
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<SendOutlined />}
+                  onClick={() => handlePublish(record)}
+                  loading={auditLoading}
+                  style={{ color: "#1890ff" }}
+                >
+                  发布
+                </Button>
+              )}
+              {/* 已发布：显示下线按钮 */}
+              {record.publishStatus === "published" && (
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<StopOutlined />}
+                  onClick={() => handleOffline(record)}
+                  loading={auditLoading}
+                  style={{ color: "#faad14" }}
+                >
+                  下线
+                </Button>
+              )}
+              {/* 已下线：显示上线按钮 */}
+              {record.publishStatus === "offline" && (
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<PlayCircleOutlined />}
+                  onClick={() => handleOnline(record)}
+                  loading={auditLoading}
+                  style={{ color: "#52c41a" }}
+                >
+                  上线
+                </Button>
+              )}
+              {/* 不通过按钮 */}
               <Button
                 type="link"
                 size="small"
-                icon={<SendOutlined />}
-                onClick={() => handlePublish(record)}
+                icon={<CloseOutlined />}
+                onClick={() => handleRejectClick(record)}
                 loading={auditLoading}
-                style={{ color: "#1890ff" }}
+                style={{ color: "#ff4d4f" }}
               >
-                发布
+                不通过
               </Button>
-            );
-          }
-
-          // 已发布：显示下线按钮
-          if (record.publishStatus === "published") {
-            return (
-              <Button
-                type="link"
-                size="small"
-                icon={<StopOutlined />}
-                onClick={() => handleOffline(record)}
-                loading={auditLoading}
-                style={{ color: "#faad14" }}
-              >
-                下线
-              </Button>
-            );
-          }
-
-          // 已下线：显示上线按钮
-          if (record.publishStatus === "offline") {
-            return (
-              <Button
-                type="link"
-                size="small"
-                icon={<PlayCircleOutlined />}
-                onClick={() => handleOnline(record)}
-                loading={auditLoading}
-                style={{ color: "#52c41a" }}
-              >
-                上线
-              </Button>
-            );
-          }
+            </Space>
+          );
         }
 
-        // 审核不通过：不显示操作按钮
+        // 审核不通过：显示通过按钮
+        if (record.auditStatus === "rejected") {
+          return (
+            <Button
+              type="link"
+              size="small"
+              icon={<CheckOutlined />}
+              onClick={() => handleApprove(record)}
+              loading={auditLoading}
+              style={{ color: "#52c41a" }}
+            >
+              通过
+            </Button>
+          );
+        }
+
         return <span style={{ color: "#999" }}>-</span>;
       },
     },
@@ -500,6 +535,16 @@ const AuditList: React.FC = () => {
           />
         </div>
       </Modal>
+
+      {/* 酒店详情弹窗 */}
+      <HotelDetailModal
+        hotelId={selectedHotelId}
+        open={detailModalOpen}
+        onCancel={() => {
+          setDetailModalOpen(false);
+          setSelectedHotelId(null);
+        }}
+      />
     </div>
   );
 };

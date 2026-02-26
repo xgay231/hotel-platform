@@ -70,7 +70,11 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="audit" replace />,
+        element: <Navigate to="hotel/list" replace />,
+      },
+      {
+        path: "hotel/list",
+        element: <HotelList />,
       },
       {
         path: "audit",

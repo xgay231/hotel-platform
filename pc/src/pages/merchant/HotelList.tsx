@@ -1,20 +1,10 @@
 /**
- * 商户酒店列表页
- * 展示当前商户上传的酒店，支持分页
+ * 酒店列表页
+ * 商户和管理员：都只展示自己上传的酒店
  */
 
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  Table,
-  Card,
-  Button,
-  Tag,
-  Space,
-  Empty,
-  Tooltip,
-  message,
-  Popconfirm,
-} from "antd";
+import { Table, Card, Button, Tag, Space, Empty, Tooltip, message } from "antd";
 import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import {
   EditOutlined,
@@ -25,7 +15,6 @@ import {
   PlayCircleOutlined,
 } from "@ant-design/icons";
 import type { Hotel } from "../../types";
-import { AuditStatus, PublishStatus } from "../../types";
 import {
   getMerchantHotels,
   publishHotel,
@@ -35,6 +24,7 @@ import {
 import useUserStore from "../../store/userStore";
 import HotelCreateModal from "../../components/HotelCreateModal";
 import HotelEditModal from "../../components/HotelEditModal";
+import HotelDetailModal from "../../components/HotelDetailModal";
 
 // 分页配置
 const DEFAULT_PAGE_SIZE = 10;
@@ -107,6 +97,7 @@ const HotelList: React.FC = () => {
   });
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedHotelId, setSelectedHotelId] = useState<string | null>(null);
 
   // 获取当前用户信息
@@ -114,6 +105,7 @@ const HotelList: React.FC = () => {
 
   /**
    * 加载酒店列表
+   * 商户和管理员：都只加载自己的酒店
    */
   const fetchHotels = useCallback(
     async (page: number, pageSize: number) => {
@@ -122,7 +114,7 @@ const HotelList: React.FC = () => {
         const response = await getMerchantHotels({
           page,
           pageSize,
-          merchantId: user?.userid, // 传递当前商户 ID
+          merchantId: user?.userid,
         });
         setHotels(response.list);
         setPagination((prev) => ({
@@ -268,9 +260,17 @@ const HotelList: React.FC = () => {
       key: "name",
       width: 200,
       ellipsis: true,
-      render: (text: string) => (
-        <Tooltip title={text}>
-          <span>{text}</span>
+      render: (text: string, record: Hotel) => (
+        <Tooltip title="点击查看详情">
+          <span
+            style={{ color: "#1890ff", cursor: "pointer" }}
+            onClick={() => {
+              setSelectedHotelId(record.id);
+              setDetailModalOpen(true);
+            }}
+          >
+            {text}
+          </span>
         </Tooltip>
       ),
     },
@@ -338,43 +338,34 @@ const HotelList: React.FC = () => {
             编辑
           </Button>
           {canPublish(record) && (
-            <Popconfirm
-              title="确认发布"
-              description="确认发布该酒店吗？"
-              onConfirm={() => handlePublish(record.id)}
-              okText="确认"
-              cancelText="取消"
+            <Button
+              type="link"
+              size="small"
+              icon={<SendOutlined />}
+              onClick={() => handlePublish(record.id)}
             >
-              <Button type="link" size="small" icon={<SendOutlined />}>
-                发布
-              </Button>
-            </Popconfirm>
+              发布
+            </Button>
           )}
           {canOffline(record) && (
-            <Popconfirm
-              title="确认下线"
-              description="确认下线该酒店吗？"
-              onConfirm={() => handleOffline(record.id)}
-              okText="确认"
-              cancelText="取消"
+            <Button
+              type="link"
+              size="small"
+              icon={<StopOutlined />}
+              onClick={() => handleOffline(record.id)}
             >
-              <Button type="link" size="small" icon={<StopOutlined />}>
-                下线
-              </Button>
-            </Popconfirm>
+              下线
+            </Button>
           )}
           {canOnline(record) && (
-            <Popconfirm
-              title="确认上线"
-              description="确认上线该酒店吗？"
-              onConfirm={() => handleOnline(record.id)}
-              okText="确认"
-              cancelText="取消"
+            <Button
+              type="link"
+              size="small"
+              icon={<PlayCircleOutlined />}
+              onClick={() => handleOnline(record.id)}
             >
-              <Button type="link" size="small" icon={<PlayCircleOutlined />}>
-                上线
-              </Button>
-            </Popconfirm>
+              上线
+            </Button>
           )}
         </Space>
       ),
@@ -455,6 +446,16 @@ const HotelList: React.FC = () => {
           setSelectedHotelId(null);
         }}
         onSuccess={handleEditSuccess}
+      />
+
+      {/* 酒店详情弹窗 */}
+      <HotelDetailModal
+        hotelId={selectedHotelId}
+        open={detailModalOpen}
+        onCancel={() => {
+          setDetailModalOpen(false);
+          setSelectedHotelId(null);
+        }}
       />
     </div>
   );

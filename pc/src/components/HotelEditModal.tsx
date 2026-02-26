@@ -9,7 +9,6 @@ import {
   Form,
   Input,
   Select,
-  InputNumber,
   message,
   Space,
   Button,
@@ -18,7 +17,6 @@ import {
   Empty,
   Divider,
 } from "antd";
-import type { FormInstance } from "antd/es/form";
 import type { Hotel, HotelStar, RoomType } from "../types";
 import {
   getHotelWithRooms,
@@ -26,7 +24,6 @@ import {
   deleteRoom,
 } from "../services/hotelService";
 import RoomTypeFormModal from "./RoomTypeFormModal";
-import type { RoomTypeFormModalProps } from "./RoomTypeFormModal";
 
 const { TextArea } = Input;
 
@@ -78,7 +75,6 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
 
   // 房型相关状态
@@ -101,7 +97,7 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
   const fetchHotelDetail = async () => {
     if (!hotelId) return;
 
-    setFetching(true);
+    setLoading(true);
     try {
       const { hotel, rooms: roomList } = await getHotelWithRooms(hotelId);
       if (!hotel) {
@@ -132,7 +128,7 @@ const HotelEditModal: React.FC<HotelEditModalProps> = ({
       console.error("获取酒店详情失败:", error);
       onCancel();
     } finally {
-      setFetching(false);
+      setLoading(false);
     }
   };
 

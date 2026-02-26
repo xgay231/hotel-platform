@@ -4,8 +4,7 @@
  */
 
 import React, { useState } from "react";
-import { Modal, Form, Input, Select, InputNumber, message, Space } from "antd";
-import type { FormInstance } from "antd/es/form";
+import { Modal, Form, Input, Select, message, Space } from "antd";
 import type { Hotel, HotelStar } from "../types";
 import { createHotel } from "../services/hotelService";
 import useUserStore from "../store/userStore";

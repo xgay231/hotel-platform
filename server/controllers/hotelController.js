@@ -250,6 +250,11 @@ const updateHotel = async (req, res) => {
     if (image_url !== undefined) hotel.image_url = image_url;
     if (tags !== undefined) hotel.tags = tags;
 
+    // 酒店信息修改后，重置审核状态为"审核中"，发布状态为"未发布"
+    hotel.audit_status = "审核中";
+    hotel.audit_reason = undefined;
+    hotel.publish_status = "未发布";
+
     await hotel.save();
 
     console.log("[updateHotel] 酒店更新成功:", hotel);
@@ -641,7 +646,7 @@ const onlineHotel = async (req, res) => {
 /**
  * 审核通过酒店
  * @route PUT /api/hotels/:id/approve
- * @desc 只有审核中的酒店可以审核通过
+ * @desc 审核中或不通过的酒店可以审核通过
  */
 const approveHotel = async (req, res) => {
   try {
@@ -658,11 +663,11 @@ const approveHotel = async (req, res) => {
       });
     }
 
-    // 检查审核状态
-    if (hotel.audit_status !== "审核中") {
+    // 检查审核状态：允许审核中或不通过的酒店进行审核通过
+    if (hotel.audit_status !== "审核中" && hotel.audit_status !== "不通过") {
       return res.status(400).json({
         success: false,
-        message: "只有审核中的酒店可以审核通过",
+        message: "只有审核中或不通过的酒店可以审核通过",
       });
     }
 
@@ -690,7 +695,7 @@ const approveHotel = async (req, res) => {
 /**
  * 审核不通过酒店
  * @route PUT /api/hotels/:id/reject
- * @desc 只有审核中的酒店可以审核不通过，需填写原因
+ * @desc 审核中或已通过的酒店可以审核不通过，需填写原因
  */
 const rejectHotel = async (req, res) => {
   try {
@@ -717,17 +722,26 @@ const rejectHotel = async (req, res) => {
       });
     }
 
-    // 检查审核状态
-    if (hotel.audit_status !== "审核中") {
+    // 检查审核状态：允许审核中或已通过的酒店进行不通过操作
+    if (hotel.audit_status !== "审核中" && hotel.audit_status !== "通过") {
       return res.status(400).json({
         success: false,
-        message: "只有审核中的酒店可以审核不通过",
+        message: "只有审核中或已通过的酒店可以审核不通过",
       });
     }
 
     // 更新审核状态
     hotel.audit_status = "不通过";
     hotel.audit_reason = reason.trim();
+
+    // 如果酒店之前已发布，需要将发布状态重置为未发布
+    if (
+      hotel.publish_status === "已发布" ||
+      hotel.publish_status === "已下线"
+    ) {
+      hotel.publish_status = "未发布";
+    }
+
     await hotel.save();
 
     console.log("[rejectHotel] 酒店审核不通过成功:", hotel);

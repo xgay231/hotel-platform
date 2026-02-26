@@ -5,10 +5,9 @@
  */
 
 import React, { useMemo } from "react";
-import { Layout, Menu, Button, Popconfirm, Avatar, Dropdown } from "antd";
+import { Layout, Menu, Avatar, Dropdown } from "antd";
 import {
   ShopOutlined,
-  EditOutlined,
   AuditOutlined,
   LogoutOutlined,
   UserOutlined,
@@ -34,6 +33,11 @@ const merchantMenuItems: MenuProps["items"] = [
  * 管理员菜单项配置
  */
 const adminMenuItems: MenuProps["items"] = [
+  {
+    key: "/admin/hotel/list",
+    icon: <ShopOutlined />,
+    label: "酒店列表",
+  },
   {
     key: "/admin/audit",
     icon: <AuditOutlined />,
