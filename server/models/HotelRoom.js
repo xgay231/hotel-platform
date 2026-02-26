@@ -34,12 +34,13 @@ const hotelRoomSchema = new mongoose.Schema(
       default: [],
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 hotelRoomSchema.index({ price: 1 });
+
+// weapp 详情页房型查询索引（Step 10）
+hotelRoomSchema.index({ hotel_id: 1, price: 1 });
 
 const HotelRoom = mongoose.model("HotelRoom", hotelRoomSchema);
 

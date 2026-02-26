@@ -116,6 +116,10 @@ hotelSchema.index({ min_price: 1 });
 hotelSchema.index({ audit_status: 1 });
 hotelSchema.index({ publish_status: 1 });
 
+// weapp 查询优化索引（Step 10）
+hotelSchema.index({ publish_status: 1, audit_status: 1, province: 1, city: 1 });
+hotelSchema.index({ min_price: 1, star: 1, rating: -1 });
+
 const Hotel = mongoose.model("Hotel", hotelSchema);
 
 module.exports = Hotel;
