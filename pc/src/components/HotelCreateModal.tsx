@@ -4,7 +4,17 @@
  */
 
 import React, { useState } from "react";
-import { App, Modal, Form, Input, Select, Space, Upload, Divider } from "antd";
+import {
+  App,
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  Space,
+  Upload,
+  Divider,
+} from "antd";
 import type { Hotel, HotelStar } from "../types";
 import { createHotel, uploadHotelImage } from "../services/hotelService";
 import useUserStore from "../store/userStore";
@@ -327,13 +337,25 @@ const HotelCreateModal: React.FC<HotelCreateModalProps> = ({
             name="minPrice"
             rules={[
               { required: true, message: "请输入最低价格" },
-              { type: "number", min: 0, message: "价格不能小于 0" },
+              {
+                validator: (_, value) => {
+                  if (value === undefined || value === null || value === "") {
+                    return Promise.reject(new Error("请输入最低价格"));
+                  }
+                  if (Number(value) < 0) {
+                    return Promise.reject(new Error("价格不能小于 0"));
+                  }
+                  return Promise.resolve();
+                },
+              },
             ]}
             style={{ width: "50%", marginBottom: 0 }}
           >
-            <Input
-              type="number"
+            <InputNumber
               placeholder="请输入最低价格"
+              min={0}
+              precision={0}
+              style={{ width: "100%" }}
               prefix="¥"
               suffix="/晚"
             />
