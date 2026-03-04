@@ -38,6 +38,8 @@ import HotelDetailModal from "../../components/HotelDetailModal";
 // 分页配置
 const DEFAULT_PAGE_SIZE = 10;
 
+type AuditFilter = "all" | Hotel["auditStatus"];
+
 /**
  * 审核状态标签渲染
  */
@@ -103,6 +105,12 @@ const AuditList: React.FC = () => {
     current: 1,
     pageSize: DEFAULT_PAGE_SIZE,
     total: 0,
+  });
+  const [auditFilter, setAuditFilter] = useState<AuditFilter>("pending");
+
+  const filteredHotels = hotels.filter((hotel) => {
+    if (auditFilter === "all") return true;
+    return hotel.auditStatus === auditFilter;
   });
 
   // 审核相关状态
@@ -484,9 +492,37 @@ const AuditList: React.FC = () => {
           </Button>
         }
       >
+        <Space style={{ marginBottom: 16 }} wrap>
+          <span style={{ color: "#666" }}>审核状态：</span>
+          <Button
+            type={auditFilter === "all" ? "primary" : "default"}
+            onClick={() => setAuditFilter("all")}
+          >
+            全部
+          </Button>
+          <Button
+            type={auditFilter === "pending" ? "primary" : "default"}
+            onClick={() => setAuditFilter("pending")}
+          >
+            审核中
+          </Button>
+          <Button
+            type={auditFilter === "approved" ? "primary" : "default"}
+            onClick={() => setAuditFilter("approved")}
+          >
+            通过
+          </Button>
+          <Button
+            type={auditFilter === "rejected" ? "primary" : "default"}
+            onClick={() => setAuditFilter("rejected")}
+          >
+            不通过
+          </Button>
+        </Space>
+
         <Table
           columns={columns}
-          dataSource={hotels}
+          dataSource={filteredHotels}
           rowKey="id"
           loading={loading}
           pagination={{

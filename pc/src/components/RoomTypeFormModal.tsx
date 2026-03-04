@@ -275,10 +275,7 @@ const RoomTypeFormModal: React.FC<RoomTypeFormModalProps> = ({
         <Form.Item
           label="房型描述"
           name="desc"
-          rules={[
-            { required: true, message: "请输入房型描述" },
-            { max: 500, message: "描述最多 500 个字符" },
-          ]}
+          rules={[{ max: 500, message: "描述最多 500 个字符" }]}
         >
           <TextArea
             placeholder="请输入房型描述"

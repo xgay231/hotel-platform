@@ -21,7 +21,7 @@ const hotelSchema = new mongoose.Schema(
     },
     name_en: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
     },
     star: {
@@ -32,12 +32,12 @@ const hotelSchema = new mongoose.Schema(
     },
     address: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
     },
     open_time: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
     },
     cover_image: {
@@ -115,7 +115,7 @@ hotelSchema.index({ min_price: 1 });
 hotelSchema.index({ audit_status: 1 });
 hotelSchema.index({ publish_status: 1 });
 
-// weapp 查询优化索引（Step 10）
+// weapp 查询优化索引
 hotelSchema.index({ publish_status: 1, audit_status: 1, province: 1, city: 1 });
 hotelSchema.index({ min_price: 1, star: 1, rating: -1 });
 
