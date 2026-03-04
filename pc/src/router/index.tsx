@@ -8,7 +8,6 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import HotelList from "@/pages/merchant/HotelList";
-import HotelEdit from "@/pages/merchant/HotelEdit";
 import AuditList from "@/pages/admin/AuditList";
 import NotFound from "@/pages/NotFound";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -47,14 +46,6 @@ const router = createBrowserRouter([
       {
         path: "hotel/list",
         element: <HotelList />,
-      },
-      {
-        path: "hotel/edit",
-        element: <HotelEdit />,
-      },
-      {
-        path: "hotel/edit/:id",
-        element: <HotelEdit />,
       },
     ],
   },
