@@ -32,7 +32,9 @@ export interface HotelListItem {
   rating: number;
 }
 
-export type HotelListResponse = PageResponse<HotelListItem>;
+export interface HotelListResponse extends PageResponse<HotelListItem> {
+  availableTags: string[];
+}
 
 export interface RoomType {
   room_id: string;

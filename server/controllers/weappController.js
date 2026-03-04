@@ -64,6 +64,35 @@ const buildRegionRegex = (value, suffixes = []) => {
   return new RegExp(regexPattern, "i");
 };
 
+const DEFAULT_HOTEL_TAGS = [
+  "免费WiFi",
+  "含早餐",
+  "免费停车场",
+  "近地铁",
+  "亲子",
+  "商务",
+  "健身房",
+  "游泳池",
+];
+
+const getAvailableTags = async (query) => {
+  const aggregated = await Hotel.aggregate([
+    { $match: query },
+    { $unwind: "$tags" },
+    { $group: { _id: null, tags: { $addToSet: "$tags" } } },
+  ]);
+
+  const normalizedTags = Array.from(
+    new Set(
+      (aggregated[0]?.tags || [])
+        .map((tag) => String(tag || "").trim())
+        .filter(Boolean)
+    )
+  ).sort((a, b) => a.localeCompare(b, "zh-Hans-CN"));
+
+  return normalizedTags.length > 0 ? normalizedTags : DEFAULT_HOTEL_TAGS;
+};
+
 const getWeappBanners = async (req, res) => {
   try {
     const banners = await Banner.find({})
@@ -218,6 +247,7 @@ const getWeappHotels = async (req, res) => {
       .lean();
 
     const hasMore = page * pageSize < total;
+    const availableTags = await getAvailableTags(query);
 
     return sendSuccess(
       res,
@@ -227,6 +257,7 @@ const getWeappHotels = async (req, res) => {
         page,
         pageSize,
         hasMore,
+        availableTags,
       },
       "获取酒店列表成功"
     );

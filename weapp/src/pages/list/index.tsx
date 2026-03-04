@@ -33,6 +33,7 @@ const HotelListPage = () => {
   const [maxPrice, setMaxPrice] = useState<number>(1500);
   const [starLevel, setStarLevel] = useState<number>(0);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
 
   // 位置状态（独立管理，用于LocationFilter组件）
   const [currentProvince, setCurrentProvince] = useState<string>("");
@@ -149,6 +150,20 @@ const HotelListPage = () => {
       console.info("[weapp-list] response count:", res.list?.length || 0);
 
       const nextList = res.list || [];
+      const nextAvailableTags = (res.availableTags || []).filter(Boolean);
+
+      setAvailableTags(nextAvailableTags);
+      setSelectedTags((prev) => {
+        const filtered = prev.filter((tag) => nextAvailableTags.includes(tag));
+        if (
+          filtered.length === prev.length &&
+          filtered.every((tag, index) => tag === prev[index])
+        ) {
+          return prev;
+        }
+        return filtered;
+      });
+
       setList((prev) => (reset ? nextList : [...prev, ...nextList]));
       setPage(res.page || nextPage);
       setHasMore(Boolean(res.hasMore));
@@ -370,6 +385,7 @@ const HotelListPage = () => {
       {/* 详细筛选组件 */}
       <DetailFilter
         visible={detailFilterVisible}
+        availableTags={availableTags}
         selectedTags={selectedTags}
         onChange={handleTagsChange}
         onClose={() => setDetailFilterVisible(false)}

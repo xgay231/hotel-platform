@@ -49,22 +49,6 @@
   overflow-y: auto;
 }
 
-.category-section {
-  margin-bottom: 32px;
-}
-
-.category-section:last-child {
-  margin-bottom: 0;
-}
-
-.category-title {
-  font-size: 28px;
-  color: #333;
-  font-weight: 500;
-  margin-bottom: 16px;
-  display: block;
-}
-
 .tags-grid {
   display: flex;
   flex-wrap: wrap;
@@ -92,6 +76,18 @@
 .tag-item.active .tag-text {
   color: #1677ff;
   font-weight: 500;
+}
+
+.empty-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.empty-text {
+  font-size: 26px;
+  color: #999;
 }
 
 .filter-footer {
